@@ -1,0 +1,9 @@
+x = 2
+y = 4
+
+cock = true == (x == 2) == false
+
+
+if cock == false then
+	sixtyfive = 65
+end

@@ -1,0 +1,45 @@
+Grammar:
+-Implemented:
+--if statement
+--var = exp
+---var = VARIABLE
+---var = STRING
+---var = FLOAT
+---var = EQUALS
+---var = BOOLEAN
+---var = INTEGER
+--op == op
+---var(INTEGER) == INTEGER
+---var(SAME) == VARIABLE(SAME)
+---var(FLOAT) == FLOAT
+---var(BOOLEAN) == BOOLEAN
+---var(EQUALS) == EQUALS
+--op == op == ... == op
+--binary ops
+--- (exp)
+--- exp + exp
+
+
+
+-Not implemented:
+--varlist = explist
+--for do statement
+--while statement
+--repeat until statement
+--function
+--local
+--break
+--return
+--binary ops
+--- exp - exp
+--- exp * exp
+--- exp / exp
+--- exp % exp
+--- exp < exp
+--- exp > exp
+--unary ops
+--precedence
+--print(LOL)
+
+
+IMPLEMENT (Expression* operator -) ON TERMINALS
