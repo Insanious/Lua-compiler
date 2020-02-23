@@ -10,44 +10,40 @@ digraph {
 	0 -> 4
 	5 [label="VariableNode = x"];
 	1 -> 5
-	6 [label="IntegerNode = 2"];
+	6 [label="StringNode = a"];
 	1 -> 6
 	7 [label="VariableNode = y"];
 	2 -> 7
-	8 [label="IntegerNode = 4"];
+	8 [label="StringNode =  with spaces"];
 	2 -> 8
-	9 [label="VariableNode = cock"];
+	9 [label="VariableNode = x"];
 	3 -> 9
-	10 [label="BinaryOperationNode = =="];
+	10 [label="BinaryOperationNode = '+'"];
 	3 -> 10
 	11 [label="IfNode"];
 	4 -> 11
-	12 [label="BinaryOperationNode = =="];
+	12 [label="BinaryOperationNode = '+'"];
 	10 -> 12
-	13 [label="BooleanNode = 0"];
+	13 [label="VariableNode = y"];
 	10 -> 13
-	14 [label="BinaryOperationNode = =="];
+	14 [label="BinaryOperationNode = '=='"];
 	11 -> 14
 	15 [label="Block"];
 	11 -> 15
-	16 [label="BooleanNode = 1"];
+	16 [label="VariableNode = x"];
 	12 -> 16
 	17 [label="ParenthesisNode"];
 	12 -> 17
-	18 [label="VariableNode = cock"];
+	18 [label="VariableNode = x"];
 	14 -> 18
-	19 [label="BooleanNode = 0"];
+	19 [label="StringNode = a string with spaces"];
 	14 -> 19
 	20 [label="AssignmentNode"];
 	15 -> 20
-	21 [label="BinaryOperationNode = =="];
+	21 [label="StringNode =  string"];
 	17 -> 21
-	22 [label="VariableNode = sixtyfive"];
+	22 [label="VariableNode = success"];
 	20 -> 22
-	23 [label="IntegerNode = 65"];
+	23 [label="BooleanNode = 1"];
 	20 -> 23
-	24 [label="VariableNode = x"];
-	21 -> 24
-	25 [label="IntegerNode = 2"];
-	21 -> 25
 }

@@ -1,14 +1,16 @@
+FLAGS = -std=c++11 -g -Wall -Wpedantic -Werror
+
 
 parser: lex.yy.c grammar.tab.o Nodes.o Environment.o main.cc
-	g++ -g -oparser grammar.tab.o Nodes.o Environment.o lex.yy.c main.cc
+	g++ $(FLAGS) -oparser grammar.tab.o Nodes.o Environment.o lex.yy.c main.cc
 grammar.tab.o: grammar.tab.cc
-	g++ -g -c grammar.tab.cc
+	g++ $(FLAGS) -c grammar.tab.cc
 
 Nodes.o: Nodes.cc Nodes.h
-	g++ -g -c Nodes.cc
+	g++ $(FLAGS) -c Nodes.cc
 
 Environment.o: Environment.cc Environment.h
-	g++ -g -c Environment.cc
+	g++ $(FLAGS) -c Environment.cc
 
 grammar.tab.cc: grammar.yy
 	bison grammar.yy -v

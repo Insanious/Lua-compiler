@@ -4,7 +4,7 @@
 
 
 bool debug_lex = false;
-bool debug_grammar = true;
+bool debug_grammar = false;
 bool debug_assignments = true;
 bool debug_calls = true;
 bool debug_evaluations = true;
@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 	yy::parser parser;
 	if(!parser.parse())
 	{
+		root->dump();
 		root->execute();
 		root->createGraphViz();
 	}

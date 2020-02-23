@@ -1,9 +1,9 @@
-x = 2
-y = 4
+x = "a"
+y = " with spaces"
 
-cock = true == (x == 2) == false
+x = x + (" string") + y
 
 
-if cock == false then
-	sixtyfive = 65
+if x == "a string with spaces" then
+	success = true
 end

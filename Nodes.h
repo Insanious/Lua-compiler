@@ -19,7 +19,7 @@ public:
 
 	void dump(int depth=0);
 	void createGraphViz();
-	std::string createLabel(Node node, int id);
+	std::string createLabel(Node* node, int id);
 	std::string createConnectionFromTo(int from, int to);
 
 };
@@ -28,14 +28,15 @@ public:
 class Expression : public Node
 {
 public:
-	enum Type { VARIABLE, STRING, INTEGER, FLOAT, BOOLEAN, EQUALS, PARENTHESIS, PLUS, BINARYOPERATION } type;
+	enum Type { VARIABLE, STRING, INTEGER, FLOAT, BOOLEAN, PARENTHESIS, BINARYOPERATION } type;
 
 	bool isExecutable;
 
 	Expression();
 	Expression(Expression::Type type, bool isExecutable, std::string tag, std::string value);
-	virtual Expression* operator == (Expression &obj);
-	virtual Expression* operator + (Expression &obj);
+	virtual Expression* operator == (Expression* obj);
+	virtual Expression* operator + (Expression* obj);
+	virtual Expression* operator - (Expression* obj);
 	~Expression();
 
 	virtual void evaluate(std::string& returnValue);
@@ -93,8 +94,9 @@ private:
 public:
 	VariableNode();
 	VariableNode(Environment* environment, std::string name);
-	Expression* operator == (Expression &obj);
-	Expression* operator + (Expression &obj);
+	Expression* operator == (Expression* obj);
+	Expression* operator + (Expression* obj);
+	Expression* operator - (Expression* obj);
 	~VariableNode();
 
 	void evaluate(Expression*& returnValue);
@@ -112,8 +114,9 @@ private:
 public:
 	IntegerNode();
 	IntegerNode(int value);
-	Expression* operator == (Expression &obj);
-	Expression* operator + (Expression &obj);
+	Expression* operator == (Expression* obj);
+	Expression* operator + (Expression* obj);
+	Expression* operator - (Expression* obj);
 	~IntegerNode();
 
 	void evaluate(int& returnValue);
@@ -129,8 +132,9 @@ private:
 public:
 	FloatNode();
 	FloatNode(float value);
-	Expression* operator == (Expression &obj);
-	Expression* operator + (Expression &obj);
+	Expression* operator == (Expression* obj);
+	Expression* operator + (Expression* obj);
+	Expression* operator - (Expression* obj);
 	~FloatNode();
 
 	void evaluate(float& returnValue);
@@ -145,8 +149,8 @@ private:
 public:
 	StringNode();
 	StringNode(std::string value);
-	Expression* operator == (Expression &obj);
-	Expression* operator + (Expression &obj);
+	Expression* operator == (Expression* obj);
+	Expression* operator + (Expression* obj);
 	~StringNode();
 
 	void evaluate(std::string& returnValue);
@@ -161,7 +165,7 @@ private:
 public:
 	BooleanNode();
 	BooleanNode(bool value);
-	Expression* operator == (Expression &obj);
+	Expression* operator == (Expression* obj);
 	~BooleanNode();
 
 	void evaluate(bool& returnValue);
@@ -185,39 +189,6 @@ public:
 };
 
 
-class EqualsNode : public Expression
-{
-private:
-	Expression* left;
-	Expression* right;
-
-public:
-	EqualsNode();
-	EqualsNode(Expression* left, Expression* right);
-	~EqualsNode();
-
-	void evaluate(bool& returnValue);
-	Expression* execute();
-};
-
-
-class PlusNode : public Expression
-{
-private:
-	Expression* left;
-	Expression* right;
-
-public:
-	PlusNode();
-	PlusNode(Expression* left, Expression* right);
-	~PlusNode();
-
-	void evaluate(Expression*& returnValue);
-
-	Expression* execute();
-};
-
-
 class ParenthesisNode : public Expression
 {
 private:
@@ -226,8 +197,9 @@ private:
 public:
 	ParenthesisNode();
 	ParenthesisNode(Expression* expression);
-	Expression* operator == (Expression& obj);
-	Expression* operator + (Expression& obj);
+	Expression* operator == (Expression* obj);
+	Expression* operator + (Expression* obj);
+	Expression* operator - (Expression* obj);
 	~ParenthesisNode();
 
 	void evaluate(Expression*& returnValue);
@@ -336,20 +308,6 @@ public:
 	void evaluate();
 };
 
-
-
-class Chunk : public Statement
-{
-private:
-
-public:
-
-	Chunk();
-	~Chunk();
-
-	void evaluate();
-	Expression* execute();
-};
 
 
 class Block : public Statement

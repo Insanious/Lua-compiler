@@ -1,47 +1,46 @@
 Terminals unused in grammar
 
-   FOR
-   WHILE
-   REPEAT
-   DO
-   UNTIL
-   IN
-   MINUS
-   MUL
-   DIV
-   POWER
-   MOD
-   LESS
-   MORE
-   LESS_OR_EQUAL
-   MORE_OR_EQUAL
-   TILDE_EQUAL
-   NOT
-   AND
-   OR
-   HASHTAG
-   LOCAL
-   FUNCTION
-   STATIC
-   NIL
-   DOT
-   COLON
-   COMMA
-   LSQUARE
-   RSQUARE
-   LCURLY
-   RCURLY
-   WHITESPACE
-   NEWLINE
-   OTHER
+    FOR
+    WHILE
+    REPEAT
+    DO
+    UNTIL
+    IN
+    MUL
+    DIV
+    POWER
+    MOD
+    LESS
+    MORE
+    LESS_OR_EQUAL
+    MORE_OR_EQUAL
+    TILDE_EQUAL
+    NOT
+    AND
+    OR
+    HASHTAG
+    LOCAL
+    FUNCTION
+    STATIC
+    NIL
+    DOT
+    COLON
+    COMMA
+    LSQUARE
+    RSQUARE
+    LCURLY
+    RCURLY
+    WHITESPACE
+    NEWLINE
+    OTHER
 
 
 State 0 conflicts: 2 shift/reduce
 State 6 conflicts: 2 shift/reduce, 4 reduce/reduce
 State 10 conflicts: 1 shift/reduce
 State 35 conflicts: 2 shift/reduce
-State 41 conflicts: 2 shift/reduce
-State 49 conflicts: 2 shift/reduce
+State 42 conflicts: 2 shift/reduce
+State 51 conflicts: 2 shift/reduce
 
 
 Grammar
@@ -85,111 +84,127 @@ Grammar
 
    24 op_1: op_last
    25     | op_1 PLUS op_last
+   26     | op_1 MINUS op_last
 
-   26 op_last: TRUE
-   27        | FALSE
-   28        | INTEGER
-   29        | FLOAT
-   30        | STRING
-   31        | VAR
-   32        | LROUND exp RROUND
+   27 op_last: TRUE
+   28        | FALSE
+   29        | INTEGER
+   30        | FLOAT
+   31        | STRING
+   32        | VAR
+   33        | LROUND exp RROUND
 
-   33 var: VAR
+   34 var: VAR
 
 
 Terminals, with rules where they appear
 
-"end of file" (0) 0
-error (256)
-IF (258) 14
-THEN (259) 14 18
-ELSEIF (260) 18
-ELSE (261) 20
-FOR (262)
-WHILE (263)
-REPEAT (264)
-DO (265)
-UNTIL (266)
-END (267) 12
-IN (268)
-PLUS (269) 25
-MINUS (270)
-MUL (271)
-DIV (272)
-POWER (273)
-MOD (274)
-EQUALS (275) 23
-LESS (276)
-MORE (277)
-LESS_OR_EQUAL (278)
-MORE_OR_EQUAL (279)
-TILDE_EQUAL (280)
-NOT (281)
-AND (282)
-OR (283)
-HASHTAG (284)
-LOCAL (285)
-FUNCTION (286)
-BREAK (287) 7
-RETURN (288) 6
-STATIC (289)
-NIL (290)
-FALSE (291) 27
-TRUE (292) 26
-INTEGER (293) 28
-FLOAT (294) 29
-STRING (295) 30
-VAR (296) 31 33
-ASSIGNMENT (297) 13
-DOT (298)
-COLON (299)
-SEMICOLON (300) 9
-COMMA (301)
-LROUND (302) 32
-RROUND (303) 32
-LSQUARE (304)
-RSQUARE (305)
-LCURLY (306)
-RCURLY (307)
-WHITESPACE (308)
-NEWLINE (309)
-OTHER (310)
+    "end of file" (0) 0
+    error (256)
+    IF <std::string> (258) 14
+    THEN <std::string> (259) 14 18
+    ELSEIF <std::string> (260) 18
+    ELSE <std::string> (261) 20
+    FOR <std::string> (262)
+    WHILE <std::string> (263)
+    REPEAT <std::string> (264)
+    DO <std::string> (265)
+    UNTIL <std::string> (266)
+    END <std::string> (267) 12
+    IN <std::string> (268)
+    PLUS <std::string> (269) 25
+    MINUS <std::string> (270) 26
+    MUL <std::string> (271)
+    DIV <std::string> (272)
+    POWER <std::string> (273)
+    MOD <std::string> (274)
+    EQUALS <std::string> (275) 23
+    LESS <std::string> (276)
+    MORE <std::string> (277)
+    LESS_OR_EQUAL <std::string> (278)
+    MORE_OR_EQUAL <std::string> (279)
+    TILDE_EQUAL <std::string> (280)
+    NOT <std::string> (281)
+    AND <std::string> (282)
+    OR <std::string> (283)
+    HASHTAG <std::string> (284)
+    LOCAL <std::string> (285)
+    FUNCTION <std::string> (286)
+    BREAK <std::string> (287) 7
+    RETURN <std::string> (288) 6
+    STATIC <std::string> (289)
+    NIL <std::string> (290)
+    FALSE <std::string> (291) 28
+    TRUE <std::string> (292) 27
+    INTEGER <int> (293) 29
+    FLOAT <float> (294) 30
+    STRING <std::string> (295) 31
+    VAR <std::string> (296) 32 34
+    ASSIGNMENT <std::string> (297) 13
+    DOT <std::string> (298)
+    COLON <std::string> (299)
+    SEMICOLON <std::string> (300) 9
+    COMMA <std::string> (301)
+    LROUND <std::string> (302) 33
+    RROUND <std::string> (303) 33
+    LSQUARE <std::string> (304)
+    RSQUARE <std::string> (305)
+    LCURLY <std::string> (306)
+    RCURLY <std::string> (307)
+    WHITESPACE <std::string> (308)
+    NEWLINE <std::string> (309)
+    OTHER <std::string> (310)
 
 
 Nonterminals, with rules where they appear
 
-$accept (56)
-    on left: 0
-block (57)
-    on left: 1, on right: 0 14 18 20
-chunk (58)
-    on left: 2 3 4, on right: 1 3
-laststmt (59)
-    on left: 5 6 7, on right: 3 4
-optsemi (60)
-    on left: 8 9, on right: 6 7 10 11
-stmts (61)
-    on left: 10 11, on right: 2 11
-stmt (62)
-    on left: 12 13, on right: 10 11
-if (63)
-    on left: 14, on right: 12
-elseifs (64)
-    on left: 15 16 17, on right: 12 17
-elseif (65)
-    on left: 18, on right: 16 17
-else (66)
-    on left: 19 20, on right: 12
-exp (67)
-    on left: 21, on right: 6 13 14 18 32
-op (68)
-    on left: 22 23, on right: 21 23
-op_1 (69)
-    on left: 24 25, on right: 22 23 25
-op_last (70)
-    on left: 26 27 28 29 30 31 32, on right: 24 25
-var (71)
-    on left: 33, on right: 13
+    $accept (56)
+        on left: 0
+    block <Statement*> (57)
+        on left: 1
+        on right: 0 14 18 20
+    chunk <std::vector<Statement*>> (58)
+        on left: 2 3 4
+        on right: 1 3
+    laststmt <Statement*> (59)
+        on left: 5 6 7
+        on right: 3 4
+    optsemi <Statement*> (60)
+        on left: 8 9
+        on right: 6 7 10 11
+    stmts <std::vector<Statement*>> (61)
+        on left: 10 11
+        on right: 2 11
+    stmt <Statement*> (62)
+        on left: 12 13
+        on right: 10 11
+    if <Statement*> (63)
+        on left: 14
+        on right: 12
+    elseifs <std::vector<Statement*>> (64)
+        on left: 15 16 17
+        on right: 12 17
+    elseif <Statement*> (65)
+        on left: 18
+        on right: 16 17
+    else <Statement*> (66)
+        on left: 19 20
+        on right: 12
+    exp <Expression*> (67)
+        on left: 21
+        on right: 6 13 14 18 33
+    op <Expression*> (68)
+        on left: 22 23
+        on right: 21 23
+    op_1 <Expression*> (69)
+        on left: 24 25 26
+        on right: 22 23 25 26
+    op_last <Expression*> (70)
+        on left: 27 28 29 30 31 32 33
+        on right: 24 25 26
+    var <Expression*> (71)
+        on left: 34
+        on right: 13
 
 
 State 0
@@ -263,9 +278,9 @@ State 3
 
 State 4
 
-   33 var: VAR .
+   34 var: VAR .
 
-    $default  reduce using rule 33 (var)
+    $default  reduce using rule 34 (var)
 
 
 State 5
@@ -353,49 +368,49 @@ State 11
 
 State 12
 
-   27 op_last: FALSE .
-
-    $default  reduce using rule 27 (op_last)
-
-
-State 13
-
-   26 op_last: TRUE .
-
-    $default  reduce using rule 26 (op_last)
-
-
-State 14
-
-   28 op_last: INTEGER .
+   28 op_last: FALSE .
 
     $default  reduce using rule 28 (op_last)
 
 
-State 15
+State 13
 
-   29 op_last: FLOAT .
+   27 op_last: TRUE .
+
+    $default  reduce using rule 27 (op_last)
+
+
+State 14
+
+   29 op_last: INTEGER .
 
     $default  reduce using rule 29 (op_last)
 
 
-State 16
+State 15
 
-   30 op_last: STRING .
+   30 op_last: FLOAT .
 
     $default  reduce using rule 30 (op_last)
 
 
-State 17
+State 16
 
-   31 op_last: VAR .
+   31 op_last: STRING .
 
     $default  reduce using rule 31 (op_last)
 
 
+State 17
+
+   32 op_last: VAR .
+
+    $default  reduce using rule 32 (op_last)
+
+
 State 18
 
-   32 op_last: LROUND . exp RROUND
+   33 op_last: LROUND . exp RROUND
 
     FALSE    shift, and go to state 12
     TRUE     shift, and go to state 13
@@ -432,8 +447,10 @@ State 21
 
    22 op: op_1 .
    25 op_1: op_1 . PLUS op_last
+   26     | op_1 . MINUS op_last
 
-    PLUS  shift, and go to state 37
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
 
     $default  reduce using rule 22 (op)
 
@@ -467,7 +484,7 @@ State 25
 
     $default  reduce using rule 8 (optsemi)
 
-    optsemi  go to state 38
+    optsemi  go to state 39
 
 
 State 26
@@ -492,7 +509,7 @@ State 28
 
     $default  reduce using rule 8 (optsemi)
 
-    optsemi  go to state 39
+    optsemi  go to state 40
 
 
 State 29
@@ -514,7 +531,7 @@ State 30
     VAR      shift, and go to state 17
     LROUND   shift, and go to state 18
 
-    exp      go to state 40
+    exp      go to state 41
     op       go to state 20
     op_1     go to state 21
     op_last  go to state 22
@@ -526,12 +543,12 @@ State 31
    17 elseifs: elseifs . elseif
 
     ELSEIF  shift, and go to state 30
-    ELSE    shift, and go to state 41
+    ELSE    shift, and go to state 42
 
     $default  reduce using rule 19 (else)
 
-    elseif  go to state 42
-    else    go to state 43
+    elseif  go to state 43
+    else    go to state 44
 
 
 State 32
@@ -553,7 +570,7 @@ State 33
     VAR      shift, and go to state 17
     LROUND   shift, and go to state 18
 
-    exp      go to state 44
+    exp      go to state 45
     op       go to state 20
     op_1     go to state 21
     op_last  go to state 22
@@ -561,9 +578,9 @@ State 33
 
 State 34
 
-   32 op_last: LROUND exp . RROUND
+   33 op_last: LROUND exp . RROUND
 
-    RROUND  shift, and go to state 45
+    RROUND  shift, and go to state 46
 
 
 State 35
@@ -579,7 +596,7 @@ State 35
     RETURN    [reduce using rule 5 (laststmt)]
     $default  reduce using rule 5 (laststmt)
 
-    block     go to state 46
+    block     go to state 47
     chunk     go to state 6
     laststmt  go to state 7
     stmts     go to state 8
@@ -600,7 +617,7 @@ State 36
     VAR      shift, and go to state 17
     LROUND   shift, and go to state 18
 
-    op_1     go to state 47
+    op_1     go to state 48
     op_last  go to state 22
 
 
@@ -616,107 +633,48 @@ State 37
     VAR      shift, and go to state 17
     LROUND   shift, and go to state 18
 
-    op_last  go to state 48
+    op_last  go to state 49
 
 
 State 38
+
+   26 op_1: op_1 MINUS . op_last
+
+    FALSE    shift, and go to state 12
+    TRUE     shift, and go to state 13
+    INTEGER  shift, and go to state 14
+    FLOAT    shift, and go to state 15
+    STRING   shift, and go to state 16
+    VAR      shift, and go to state 17
+    LROUND   shift, and go to state 18
+
+    op_last  go to state 50
+
+
+State 39
 
     6 laststmt: RETURN exp optsemi .
 
     $default  reduce using rule 6 (laststmt)
 
 
-State 39
+State 40
 
    11 stmts: stmts stmt optsemi .
 
     $default  reduce using rule 11 (stmts)
 
 
-State 40
+State 41
 
    18 elseif: ELSEIF exp . THEN block
 
-    THEN  shift, and go to state 49
-
-
-State 41
-
-   20 else: ELSE . block
-
-    IF      shift, and go to state 1
-    BREAK   shift, and go to state 2
-    RETURN  shift, and go to state 3
-    VAR     shift, and go to state 4
-
-    BREAK     [reduce using rule 5 (laststmt)]
-    RETURN    [reduce using rule 5 (laststmt)]
-    $default  reduce using rule 5 (laststmt)
-
-    block     go to state 50
-    chunk     go to state 6
-    laststmt  go to state 7
-    stmts     go to state 8
-    stmt      go to state 9
-    if        go to state 10
-    var       go to state 11
+    THEN  shift, and go to state 51
 
 
 State 42
 
-   17 elseifs: elseifs elseif .
-
-    $default  reduce using rule 17 (elseifs)
-
-
-State 43
-
-   12 stmt: if elseifs else . END
-
-    END  shift, and go to state 51
-
-
-State 44
-
-   13 stmt: var ASSIGNMENT exp .
-
-    $default  reduce using rule 13 (stmt)
-
-
-State 45
-
-   32 op_last: LROUND exp RROUND .
-
-    $default  reduce using rule 32 (op_last)
-
-
-State 46
-
-   14 if: IF exp THEN block .
-
-    $default  reduce using rule 14 (if)
-
-
-State 47
-
-   23 op: op EQUALS op_1 .
-   25 op_1: op_1 . PLUS op_last
-
-    PLUS  shift, and go to state 37
-
-    $default  reduce using rule 23 (op)
-
-
-State 48
-
-   25 op_1: op_1 PLUS op_last .
-
-    $default  reduce using rule 25 (op_1)
-
-
-State 49
-
-   18 elseif: ELSEIF exp THEN . block
+   20 else: ELSE . block
 
     IF      shift, and go to state 1
     BREAK   shift, and go to state 2
@@ -736,21 +694,104 @@ State 49
     var       go to state 11
 
 
+State 43
+
+   17 elseifs: elseifs elseif .
+
+    $default  reduce using rule 17 (elseifs)
+
+
+State 44
+
+   12 stmt: if elseifs else . END
+
+    END  shift, and go to state 53
+
+
+State 45
+
+   13 stmt: var ASSIGNMENT exp .
+
+    $default  reduce using rule 13 (stmt)
+
+
+State 46
+
+   33 op_last: LROUND exp RROUND .
+
+    $default  reduce using rule 33 (op_last)
+
+
+State 47
+
+   14 if: IF exp THEN block .
+
+    $default  reduce using rule 14 (if)
+
+
+State 48
+
+   23 op: op EQUALS op_1 .
+   25 op_1: op_1 . PLUS op_last
+   26     | op_1 . MINUS op_last
+
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+
+    $default  reduce using rule 23 (op)
+
+
+State 49
+
+   25 op_1: op_1 PLUS op_last .
+
+    $default  reduce using rule 25 (op_1)
+
+
 State 50
+
+   26 op_1: op_1 MINUS op_last .
+
+    $default  reduce using rule 26 (op_1)
+
+
+State 51
+
+   18 elseif: ELSEIF exp THEN . block
+
+    IF      shift, and go to state 1
+    BREAK   shift, and go to state 2
+    RETURN  shift, and go to state 3
+    VAR     shift, and go to state 4
+
+    BREAK     [reduce using rule 5 (laststmt)]
+    RETURN    [reduce using rule 5 (laststmt)]
+    $default  reduce using rule 5 (laststmt)
+
+    block     go to state 54
+    chunk     go to state 6
+    laststmt  go to state 7
+    stmts     go to state 8
+    stmt      go to state 9
+    if        go to state 10
+    var       go to state 11
+
+
+State 52
 
    20 else: ELSE block .
 
     $default  reduce using rule 20 (else)
 
 
-State 51
+State 53
 
    12 stmt: if elseifs else END .
 
     $default  reduce using rule 12 (stmt)
 
 
-State 52
+State 54
 
    18 elseif: ELSEIF exp THEN block .
 

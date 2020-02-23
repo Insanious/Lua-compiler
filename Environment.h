@@ -15,9 +15,9 @@ public:
 	Environment();
 	~Environment();
 
-	Expression* read(std::string name);
-	void write(std::string name, Expression* expression);
-	bool exists(std::string name);
+	Expression* read(Expression* variable);
+	void write(Expression* variable, Expression* expression);
+	bool exists(Expression* variable);
 };
 
 

@@ -6,19 +6,19 @@
 void log_assignments(std::string message)
 {
 	if (debug_assignments)
-		std::cout << message + '\n';
+		std::cout << "-ASSIGNMENT-\t\t\t\t\t\t\t\t " + message + '\n';
 }
 
 void log_calls(std::string message)
 {
 	if (debug_calls)
-		std::cout << message + '\n';
+		std::cout << "CALL:\t\t " + message + '\n';
 }
 
 void log_evaluations(std::string message)
 {
 	if (debug_evaluations)
-		std::cout << message + '\n';
+		std::cout << "EVALUATION:\t " + message + '\n';
 }
 
 
@@ -39,30 +39,30 @@ void Node::dump(int depth)
 	for(int i = 0; i < depth; i++)
 		std::cout << "--";
 	std::cout << tag << ':' << value << '\n';
-	for(int i = 0; i != children.size(); i++)
+	for(long unsigned int i = 0; i != children.size(); i++)
 		children[i]->dump(depth+1);
 }
 
 void Node::createGraphViz()
 {
-	std::queue<Node> nodes;
+	std::queue<Node*> nodes;
 	int id = 0;
 	int parentId = -1;
 
 	std::string graph = "digraph { \n";
-	graph += createLabel(*this, id++);
-	nodes.push(*this);
+	graph += createLabel(this, id++);
+	nodes.push(this);
 
 	while (nodes.size())
 	{
-		Node parent = nodes.front();
+		Node* parent = nodes.front();
 		nodes.pop();
 		parentId++;
 
-		for (int i = 0; i < parent.children.size(); i++)
+		for (auto child : parent->children)
 		{
-			nodes.push(*parent.children[i]);
-			graph += createLabel(*parent.children[i], id);
+			nodes.push(child);
+			graph += createLabel(child, id);
 			graph += createConnectionFromTo(parentId, id++);
 		}
 	}
@@ -75,13 +75,13 @@ void Node::createGraphViz()
 	file.close();
 }
 
-std::string Node::createLabel(Node node, int id)
+std::string Node::createLabel(Node* node, int id)
 {
 	std::string label = "";
-	if (node.value.length())
-		label = '\t' + std::to_string(id) + " [label=\"" + node.tag + " = " + node.value + "\"];\n";
+	if (node->value.length())
+		label = '\t' + std::to_string(id) + " [label=\"" + node->tag + " = " + node->value + "\"];\n";
 	else
-		label = '\t' + std::to_string(id) + " [label=\"" + node.tag + "\"];\n";
+		label = '\t' + std::to_string(id) + " [label=\"" + node->tag + "\"];\n";
 	return label;
 }
 
@@ -101,15 +101,21 @@ Expression::Expression(Expression::Type type, bool isExecutable, std::string tag
 	this->isExecutable = isExecutable;
 }
 
-Expression* Expression::operator == (Expression &obj)
+Expression* Expression::operator == (Expression* obj)
 {
-	log_calls("Expression* Expression::operator == (Expression &obj)");
+	log_calls("Expression* Expression::operator == (Expression* obj)");
 	return nullptr;
 }
 
-Expression* Expression::operator + (Expression &obj)
+Expression* Expression::operator + (Expression* obj)
 {
-	log_calls("Expression* Expression::operator + (Expression &obj)");
+	log_calls("Expression* Expression::operator + (Expression* obj)");
+	return nullptr;
+}
+
+Expression* Expression::operator - (Expression* obj)
+{
+	log_calls("Expression* Expression::operator - (Expression* obj)");
 	return nullptr;
 }
 
@@ -226,44 +232,39 @@ Expression* AssignmentNode::execute()
 
 	if (left->type != Expression::Type::VARIABLE) // Can't assign a non-variable
 	{
-		std::cout << "syntax error: non-VARIABLE assignment\n";
+		std::cout << "SYNTAX ERROR: non-VARIABLE assignment\n";
 		return nullptr;
 	}
 
-	std::string leftName = "";
 	Expression* leftExpression = nullptr;
 	Expression* rightExpression = right;
-	left->evaluate(leftName);
 	left->evaluate(leftExpression);
 
 	if (right->type == Expression::Type::VARIABLE)
 	{
-		std::string rightName = "";
-		right->evaluate(rightName);
 		right->evaluate(rightExpression);
-		if (rightExpression == nullptr) // Check if right variable exists
+		if (!rightExpression) // Check if right variable exists
 		{
-			std::cout << "syntax error: trying to assign a var to an undeclared variable\n";
+			std::cout << "SYNTAX ERROR: trying to assign a var to an undeclared variable\n";
 			return nullptr;
 		}
 	}
-	/*else if (right->type == Expression::Type::PLUS)
-		right->evaluate(rightExpression);*/
 
-
-
-	if (environment->exists(leftName) && !left->sameType(rightExpression)) // Check if type doesn't match
+	if (environment->exists(left) && !left->sameType(rightExpression)) // Check if type doesn't match
 	{
-		std::cout << "syntax error: trying to assign a variable with an expression of the wrong type" << leftExpression->type << ", " << rightExpression->type << '\n';
+		std::cout << "SYNTAX ERROR: trying to assign a variable with an expression of the wrong type" << leftExpression->type << ", " << rightExpression->type << '\n';
 		return nullptr;
 	}
 
-	environment->write(leftName, rightExpression);
-
-
+	environment->write(left, rightExpression);
 
 	/* --- Output the assignment --- */
+	std::string leftName = "";
 	std::string output = "";
+
+	left->evaluate(leftName);
+
+
 	switch (rightExpression->type)
 	{
 		case Expression::Type::VARIABLE:
@@ -302,19 +303,14 @@ Expression* AssignmentNode::execute()
 				output = leftName + " = false";
 			break;
 		}
-		case Expression::Type::EQUALS:
-		{
-			bool value = false;
-			rightExpression->evaluate(value);
-			if (value)
-				output = leftName + " = true";
-			else
-				output = leftName + " = false";
+		case Expression::Type::PARENTHESIS:
+		case Expression::Type::BINARYOPERATION:
 			break;
-		}
 	}
 
-	log_assignments("-ASSIGNMENT-\t\t\t\t\t\t " + output);
+	log_assignments(output);
+
+	return nullptr;
 }
 
 
@@ -329,18 +325,40 @@ VariableNode::VariableNode(Environment* environment, std::string name) : Express
 	this->name = name;
 }
 
-Expression* VariableNode::operator == (Expression &obj)
+Expression* VariableNode::operator == (Expression* obj)
 {
-	log_calls("Expression* VariableNode::operator == (Expression &obj)");
+	log_calls("Expression* VariableNode::operator == (Expression* obj)");
 
-	return obj == *environment->read(this->name);
+	Expression* objExpression = obj;
+
+	if (obj->type == Expression::Type::VARIABLE)
+		obj->evaluate(objExpression);
+
+	return *environment->read(this) == objExpression;
 }
 
-Expression* VariableNode::operator + (Expression &obj)
+Expression* VariableNode::operator + (Expression* obj)
 {
-	log_calls("Expression* VariableNode::operator + (Expression &obj)");
+	log_calls("Expression* VariableNode::operator + (Expression* obj)");
 
-	return obj + *environment->read(this->name);
+	Expression* objExpression = obj;
+
+	if (obj->type == Expression::Type::VARIABLE)
+		obj->evaluate(objExpression);
+
+	return *environment->read(this) + objExpression;
+}
+
+Expression* VariableNode::operator - (Expression* obj)
+{
+	log_calls("Expression* VariableNode::operator - (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (obj->type == Expression::Type::VARIABLE)
+		obj->evaluate(objExpression);
+
+	return *environment->read(this) - objExpression;
 }
 
 VariableNode::~VariableNode() {}
@@ -349,9 +367,7 @@ void VariableNode::evaluate(Expression*& returnValue)
 {
 	log_evaluations("VariableNode::evaluate(Expression*& returnValue)");
 
-	returnValue = environment->read(name);
-	if (returnValue)
-		std::cout << "var type: " << returnValue->type << '\n';
+	returnValue = environment->read(this);
 }
 
 void VariableNode::evaluate(std::string& returnValue)
@@ -364,7 +380,7 @@ bool VariableNode::sameType(Expression* other)
 {
 	log_calls("bool VariableNode::sameType(Expression* other)");
 
-	return this->environment->read(name)->type == other->type;
+	return this->environment->read(this)->type == other->type;
 }
 
 
@@ -378,50 +394,76 @@ IntegerNode::IntegerNode(int value) : Expression(Expression::Type::INTEGER, fals
 	this->value = value;
 }
 
-Expression* IntegerNode::operator == (Expression &obj)
+Expression* IntegerNode::operator == (Expression* obj)
 {
-	log_calls("Expression* IntegerNode::operator == (Expression &obj)");
+	log_calls("Expression* IntegerNode::operator == (Expression* obj)");
 
-	if (obj.type == Expression::Type::VARIABLE || obj.type == Expression::Type::PARENTHESIS || obj.type == Expression::Type::EQUALS) // Check equality with own equality operator
-		return obj == *this;
+	Expression* objExpression = obj;
 
-	if (obj.type != Expression::Type::INTEGER)
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
+
+	if (objExpression->type != Expression::Type::INTEGER)
 	{
-		std::cout << "syntax error: different types when checking equality\n";
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
 	}
 
 	int objValue = 0;
-	obj.evaluate(objValue);
+	objExpression->evaluate(objValue);
 
 	return new BooleanNode(this->value == objValue);
 }
 
-Expression* IntegerNode::operator + (Expression &obj)
+Expression* IntegerNode::operator + (Expression* obj)
 {
-	log_calls("int IntegerNode::operator + (Expression &obj)");
+	log_calls("Expression* IntegerNode::operator + (Expression* obj)");
 
-	if (obj.type == Expression::Type::VARIABLE || obj.type == Expression::Type::PARENTHESIS || obj.type == Expression::Type::EQUALS)
-		return obj + *this;
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
 
 
-	if (obj.type != Expression::Type::INTEGER)
+	if (objExpression->type != Expression::Type::INTEGER)
 	{
-		std::cout << "syntax error: different types when checking equality\n";
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
 	}
 
 	int objValue = 0;
-	obj.evaluate(objValue);
+	objExpression->evaluate(objValue);
 
 	return new IntegerNode(this->value + objValue);
+}
+
+Expression* IntegerNode::operator - (Expression* obj)
+{
+	log_calls("Expression* IntegerNode::operator - (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
+
+
+	if (objExpression->type != Expression::Type::INTEGER)
+	{
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
+		return nullptr;
+	}
+
+	int objValue = 0;
+	objExpression->evaluate(objValue);
+
+	return new IntegerNode(this->value - objValue);
 }
 
 IntegerNode::~IntegerNode() {}
 
 void IntegerNode::evaluate(int& returnValue)
 {
-	log_evaluations("IntegerNode::evaluate(int& returnValue)\t\t\t = " + std::to_string(value));
+	log_evaluations("IntegerNode::evaluate(int& returnValue)\t\t = " + std::to_string(value));
 	returnValue = value;
 }
 
@@ -436,43 +478,69 @@ FloatNode::FloatNode(float value) : Expression(Expression::Type::FLOAT, false, "
 	this->value = value;
 }
 
-Expression* FloatNode::operator == (Expression &obj)
+Expression* FloatNode::operator == (Expression* obj)
 {
-	log_calls("Expression* FloatNode::operator == (Expression &obj)");
+	log_calls("Expression* FloatNode::operator == (Expression* obj)");
 
-	if (obj.type == Expression::Type::VARIABLE || obj.type == Expression::Type::PARENTHESIS || obj.type == Expression::Type::EQUALS)
-		return obj == *this;
+	Expression* objExpression = obj;
 
-	if (obj.type != Expression::Type::FLOAT)
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
+
+	if (objExpression->type != Expression::Type::FLOAT)
 	{
-		std::cout << "syntax error: different types when checking equality\n";
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
 	}
 
 	float objValue = 0.0;
-	obj.evaluate(objValue);
+	objExpression->evaluate(objValue);
 
 	return new BooleanNode(this->value == objValue);
 }
 
-Expression* FloatNode::operator + (Expression &obj)
+Expression* FloatNode::operator + (Expression* obj)
 {
-	log_calls("Expression* FloatNode::operator + (Expression &obj)");
+	log_calls("Expression* FloatNode::operator + (Expression* obj)");
 
-	if (obj.type == Expression::Type::VARIABLE || obj.type == Expression::Type::PARENTHESIS || obj.type == Expression::Type::EQUALS || obj.type == Expression::Type::PLUS)
-		return obj + *this;
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
 
 
-	if (obj.type != Expression::Type::FLOAT)
+	if (objExpression->type != Expression::Type::FLOAT)
 	{
-		std::cout << "syntax error: different types when checking equality\n";
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
 	}
 
 	float objValue = 0.0;
-	obj.evaluate(objValue);
+	objExpression->evaluate(objValue);
 
 	return new FloatNode(this->value + objValue);
+}
+
+Expression* FloatNode::operator - (Expression* obj)
+{
+	log_calls("Expression* FloatNode::operator - (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
+
+
+	if (objExpression->type != Expression::Type::FLOAT)
+	{
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
+		return nullptr;
+	}
+
+	float objValue = 0.0;
+	objExpression->evaluate(objValue);
+
+	return new FloatNode(this->value - objValue);
 }
 
 FloatNode::~FloatNode() {}
@@ -495,42 +563,46 @@ StringNode::StringNode(std::string value) : Expression(Expression::Type::STRING,
 	this->value = value;
 }
 
-Expression* StringNode::operator == (Expression &obj)
+Expression* StringNode::operator == (Expression* obj)
 {
-	log_calls("Expression* StringNode::operator == (Expression &obj)");
+	log_calls("Expression* StringNode::operator == (Expression* obj)");
 
-	if (obj.type == Expression::Type::VARIABLE || obj.type == Expression::Type::PARENTHESIS || obj.type == Expression::Type::EQUALS)
-		return obj == *this;
+	Expression* objExpression = obj;
 
-	if (obj.type != Expression::Type::STRING)
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
+
+	if (objExpression->type != Expression::Type::STRING)
 	{
-		std::cout << "syntax error: different types when checking equality " << this->type << ", " << obj.type << '\n';
+		std::cout << "SYNTAX ERROR: different types when checking equality " << this->type << ", " << objExpression->type << '\n';
 		return nullptr;
 	}
 
 	std::string objValue = "";
-	obj.evaluate(objValue);
+	objExpression->evaluate(objValue);
 
 	return new BooleanNode(this->value == objValue);
 }
 
-Expression* StringNode::operator + (Expression &obj)
+Expression* StringNode::operator + (Expression* obj)
 {
-	log_calls("Expression* StringNode::operator + (Expression &obj)");
+	log_calls("Expression* StringNode::operator + (Expression* obj)");
 
-	if (obj.type == Expression::Type::VARIABLE || obj.type == Expression::Type::PARENTHESIS || obj.type == Expression::Type::EQUALS)
-		return obj + *this;
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
 
 
-	if (obj.type != Expression::Type::STRING)
+	if (objExpression->type != Expression::Type::STRING)
 	{
-		std::cout << "syntax error: different types when checking equality\n";
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
 	}
 
 	std::string objValue = "";
-	obj.evaluate(objValue);
-	std::cout << this->value << ", " << objValue << '\n';
+	objExpression->evaluate(objValue);
+
 	return new StringNode(this->value + objValue);
 }
 
@@ -554,21 +626,23 @@ BooleanNode::BooleanNode(bool value) : Expression(Expression::Type::BOOLEAN, fal
 	this->value = value;
 }
 
-Expression* BooleanNode::operator == (Expression &obj)
+Expression* BooleanNode::operator == (Expression* obj)
 {
-	log_calls("Expression* BooleanNode::operator == (Expression &obj)");
+	log_calls("Expression* BooleanNode::operator == (Expression* obj)");
 
-	if (obj.type == Expression::Type::VARIABLE) // Check equality with VariableNodes own equality operator
-		return obj == *this;
+	Expression* objExpression = obj;
 
-	if (obj.type != Expression::Type::BOOLEAN)
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression); // Extract the underlying expression
+
+	if (objExpression->type != Expression::Type::BOOLEAN)
 	{
-		std::cout << "syntax error: different types when checking equality\n";
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
 	}
 
 	bool objValue = false;
-	obj.evaluate(objValue);
+	objExpression->evaluate(objValue);
 
 	return new BooleanNode(this->value == objValue);
 }
@@ -603,13 +677,13 @@ BinaryOperationNode::BinaryOperationNode(Expression* left, Expression* right, Bi
 	switch(this->operation)
 	{
 		case BinaryOperationNode::Operation::EQUALS:
-			this->value = "==";
+			this->value = "'=='";
 			break;
 		case BinaryOperationNode::Operation::PLUS:
-			this->value = "+";
+			this->value = "'+'";
 			break;
 		case BinaryOperationNode::Operation::MINUS:
-			this->value = "-";
+			this->value = "'-'";
 			break;
 	}
 }
@@ -622,90 +696,20 @@ Expression* BinaryOperationNode::execute()
 
 	if (left->isExecutable)
 		left = left->execute();
-	std::cout << "huh\n";
-	if (right->isExecutable)
-		right = right->execute();
-	std::cout << "operation: " << this->operation << '\n';
-
-		switch(this->operation)
-		{
-			case BinaryOperationNode::Operation::EQUALS:
-				return *left == *right;
-			case BinaryOperationNode::Operation::PLUS:
-				std::cout << "huh\n";
-				return *left + *right;
-			//case BinaryOperationNode::Operation::MINUS:
-				//return *left - *right;
-		}
-}
-
-
-
-EqualsNode::EqualsNode() {}
-
-EqualsNode::EqualsNode(Expression* left, Expression* right) : Expression(Expression::Type::EQUALS, true, "EqualsNode", "")
-{
-	log_calls("EqualsNode::EqualsNode(Expression* left, Expression* right)");
-
-	this->children.push_back(left);
-	this->children.push_back(right);
-
-	this->left = left;
-	this->right = right;
-}
-
-EqualsNode::~EqualsNode() {}
-
-void EqualsNode::evaluate(bool& returnValue)
-{
-	log_evaluations("void EqualsNode::evaluate(bool& returnValue)");
-
-	returnValue = *left == *right;
-}
-
-Expression* EqualsNode::execute()
-{
-	log_calls("Expression* EqualsNode::execute()");
-	if (left->isExecutable)
-		left = left->execute();
 	if (right->isExecutable)
 		right = right->execute();
 
-	return new BooleanNode(*right == *left);
-}
+	switch(this->operation)
+	{
+		case BinaryOperationNode::Operation::EQUALS:
+			return *left == right;
+		case BinaryOperationNode::Operation::PLUS:
+			return *left + right;
+		case BinaryOperationNode::Operation::MINUS:
+			return *left - right;
+	}
 
-
-
-PlusNode::PlusNode() {}
-
-PlusNode::PlusNode(Expression* left, Expression* right) : Expression(Expression::Type::PLUS, true, "PlusNode", "")
-{
-	log_calls("PlusNode::PlusNode(Expression* left, Expression* right)");
-
-	this->children.push_back(left);
-	this->children.push_back(right);
-
-	this->left = left;
-	this->right = right;
-}
-
-void PlusNode::evaluate(Expression*& returnValue)
-{
-	log_evaluations("void PlusNode::evaluate(Expression*& returnValue)");
-
-	returnValue = *left + *right;
-}
-
-Expression* PlusNode::execute()
-{
-	log_calls("Expression* PlusNode::execute()");
-
-	if (left->isExecutable)
-		left = left->execute();
-	if (right->isExecutable)
-		right = right->execute();
-
-	return *left + *right;
+	return nullptr;
 }
 
 
@@ -722,18 +726,24 @@ ParenthesisNode::ParenthesisNode(Expression* expression) : Expression(Expression
 
 ParenthesisNode::~ParenthesisNode() {}
 
-Expression* ParenthesisNode::operator == (Expression& obj)
+Expression* ParenthesisNode::operator == (Expression* obj)
 {
-	log_calls("Expression* ParenthesisNode::operator == (Expression &obj)");
+	log_calls("Expression* ParenthesisNode::operator == (Expression* obj)");
 
 	// Reverse equality because the ParenthesisNode has been untangled through its expression, no longer a ParenthesisNode
 	return *this->expression == obj;
 }
 
-Expression* ParenthesisNode::operator + (Expression& obj)
+Expression* ParenthesisNode::operator + (Expression* obj)
 {
-	log_calls("Expression* ParenthesisNode::operator + (Expression& obj)");
+	log_calls("Expression* ParenthesisNode::operator + (Expression* obj)");
 	return *this->expression + obj;
+}
+
+Expression* ParenthesisNode::operator - (Expression* obj)
+{
+	log_calls("Expression* ParenthesisNode::operator - (Expression* obj)");
+	return *this->expression - obj;
 }
 
 void ParenthesisNode::evaluate(Expression*& returnValue)
@@ -752,6 +762,8 @@ void ParenthesisNode::evaluate(bool& returnValue)
 
 Expression* ParenthesisNode::execute()
 {
+	log_calls("Expression* ParenthesisNode::execute()");
+
 	if (this->expression->isExecutable)
 		this->expression = this->expression->execute();
 
@@ -790,6 +802,8 @@ Expression* IfStatementNode::execute()
 		if (returnValue)
 			return ifNode->execute();
 	}
+
+	return nullptr;
 }
 
 
@@ -837,8 +851,13 @@ ElseNode::ElseNode(Statement* block) : Statement("ElseNode", "")
 {
 	log_calls("ElseNode::ElseNode(Statement* block)");
 
-	this->children.push_back(block);
-	this->block = block;
+	if (block)
+	{
+		this->children.push_back(block);
+		this->block = block;
+	}
+	else
+		this->block = nullptr;
 }
 
 ElseNode::~ElseNode() {}
@@ -929,23 +948,6 @@ void SemicolonNode::evaluate()
 
 
 
-Chunk::Chunk() : Statement("Chunk", "") {}
-
-Chunk::~Chunk() {}
-
-void Chunk::evaluate()
-{
-	log_evaluations("void Chunk::evaluate()");
-}
-
-Expression* Chunk::execute()
-{
-	log_calls("Expression* Chunk::execute()");
-	return nullptr;
-}
-
-
-
 Block::Block() : Statement("Block", "") {}
 
 Block::Block(std::vector<Statement*> statements) : Statement("Block", "")
@@ -969,6 +971,12 @@ Expression* Block::execute()
 {
 	log_calls("Expression* Block::execute()");
 
+	Expression* res = nullptr;
+
 	for(auto statement : statements)
-		Expression* res = statement->execute();
+	{
+		res = statement->execute();
+	}
+
+	return res;
 }
