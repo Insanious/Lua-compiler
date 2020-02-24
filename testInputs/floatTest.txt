@@ -1,0 +1,13 @@
+x = 1.5 + 1.5
+
+if x == 3.0 then
+	x = 2.0 * 2.5
+
+		if x == 5.0 then
+			print("success")
+		else
+			print("fail2")
+		end
+else
+	print("fail1")
+end

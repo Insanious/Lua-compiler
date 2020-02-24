@@ -5,9 +5,9 @@
 
 bool debug_lex = false;
 bool debug_grammar = false;
-bool debug_assignments = false;
-bool debug_calls = false;
-bool debug_evaluations = false;
+bool debug_assignments = true;
+bool debug_calls = true;
+bool debug_evaluations = true;
 
 void yy::parser::error(std::string const&err)
 {
@@ -16,6 +16,20 @@ void yy::parser::error(std::string const&err)
 
 int main(int argc, char **argv)
 {
+	if (argc == 2)
+	{
+		std::string argument = argv[1];
+		if (argument == "nodebug")
+		{
+			debug_lex = false;
+			debug_grammar = false;
+			debug_assignments = false;
+			debug_calls = false;
+			debug_evaluations = false;
+		}
+	}
+
+
 	std::string graph = "";
 	yy::parser parser;
 	if(!parser.parse())

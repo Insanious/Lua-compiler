@@ -1,0 +1,7 @@
+x = "a " + "string"
+
+if x == "a string" then
+	print("success")
+else
+	print("fail1")
+end

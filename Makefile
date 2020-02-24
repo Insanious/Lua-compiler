@@ -17,4 +17,4 @@ grammar.tab.cc: grammar.yy
 lex.yy.c: lexer.ll grammar.tab.cc
 	flex lexer.ll
 clean:
-	rm -f grammar.tab.* lex.yy.c* parser tree.pdf
+	rm -f grammar.tab.* lex.yy.c* parser tree.pdf Environment.o grammar.output graph.dot *.o

@@ -1,0 +1,14 @@
+x = 1
+y = 2
+
+if x + y == 3 then
+	x = x * 2 + y * 3
+
+		if x == 8 then
+			print("success")
+		else
+			print("fail2")
+		end
+else
+	print("fail1")
+end

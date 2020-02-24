@@ -10,7 +10,7 @@
 	void log_grammar(std::string message)
 	{
 		if (debug_grammar)
-			std::cout << "GRAMMAR : " << message << '\n';
+			std::cout << "GRAMMAR:\t " << message << '\n';
 	}
 
 	Statement* root;
@@ -113,6 +113,7 @@
 %type <Expression*> var
 %type <Expression*> op
 %type <Expression*> op_1
+%type <Expression*> op_2
 %type <Expression*> op_last
 
 
@@ -251,20 +252,29 @@ op : op_1									{
 											}
 
 
-op_1 : op_last								{
-												log_grammar("op_1:op_last");
+op_1 : op_2								{
+												log_grammar("op_1:op_2");
 												$$ = $1;
 											}
-	 | op_1 PLUS op_last					{
-												log_grammar("op_1:op_1 PLUS op_last");
+	 | op_1 PLUS op_2					{
+												log_grammar("op_1:op_1 PLUS op_2");
 												//$$ = new PlusNode($1, $3);
 												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::PLUS);
 											}
-	 | op_1 MINUS op_last					{
-												log_grammar("op_1:op_1 MINUS op_last");
+	 | op_1 MINUS op_2					{
+												log_grammar("op_1:op_1 MINUS op_2");
 												//$$ = new PlusNode($1, $3);
 												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::MINUS);
 											}
+
+op_2 : op_last								{
+												log_grammar("op_2:op_last");
+												$$ = $1;
+											}
+	 | op_2 MUL op_last						{
+ 												log_grammar("op_2:op_2 MUL op_last");
+ 												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::MULTIPLICATION);
+ 											}
 
 
 op_last : TRUE								{

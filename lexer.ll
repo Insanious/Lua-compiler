@@ -10,7 +10,7 @@ extern bool debug_lex;
 void log_lexer(std::string message)
 {
 	if (debug_lex)
-		std::cout << "LEX : " << message << '\n';
+		std::cout << "LEX:\t\t " << message << '\n';
 }
 
 }

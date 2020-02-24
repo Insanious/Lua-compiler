@@ -39,7 +39,7 @@ void Environment::write(Expression* variable, Expression* expression)
 bool Environment::exists(Expression* variable)
 {
 	//std::cout << "bool Environment::exists(Expression* variable)\n";
-	
+
 	std::string name = "";
 	variable->evaluate(name);
 

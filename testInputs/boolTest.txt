@@ -1,0 +1,7 @@
+x = true
+
+if x == true then
+	print("success")
+else
+	print("fail1")
+end

@@ -37,6 +37,7 @@ public:
 	virtual Expression* operator == (Expression* obj);
 	virtual Expression* operator + (Expression* obj);
 	virtual Expression* operator - (Expression* obj);
+	virtual Expression* operator * (Expression* obj);
 	~Expression();
 
 	virtual void evaluate(std::string& returnValue);
@@ -97,6 +98,7 @@ public:
 	Expression* operator == (Expression* obj);
 	Expression* operator + (Expression* obj);
 	Expression* operator - (Expression* obj);
+	Expression* operator * (Expression* obj);
 	~VariableNode();
 
 	void evaluate(Expression*& returnValue);
@@ -117,6 +119,7 @@ public:
 	Expression* operator == (Expression* obj);
 	Expression* operator + (Expression* obj);
 	Expression* operator - (Expression* obj);
+	Expression* operator * (Expression* obj);
 	~IntegerNode();
 
 	void evaluate(int& returnValue);
@@ -135,6 +138,7 @@ public:
 	Expression* operator == (Expression* obj);
 	Expression* operator + (Expression* obj);
 	Expression* operator - (Expression* obj);
+	Expression* operator * (Expression* obj);
 	~FloatNode();
 
 	void evaluate(float& returnValue);
@@ -179,7 +183,7 @@ private:
 	Expression* right;
 
 public:
-	enum Operation { EQUALS, PLUS, MINUS } operation;
+	enum Operation { EQUALS, PLUS, MINUS, MULTIPLICATION } operation;
 
 	BinaryOperationNode();
 	BinaryOperationNode(Expression* left, Expression* right, BinaryOperationNode::Operation operation);
@@ -200,6 +204,7 @@ public:
 	Expression* operator == (Expression* obj);
 	Expression* operator + (Expression* obj);
 	Expression* operator - (Expression* obj);
+	Expression* operator * (Expression* obj);
 	~ParenthesisNode();
 
 	void evaluate(Expression*& returnValue);
