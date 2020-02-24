@@ -3,8 +3,8 @@
 #include "globals.h"
 
 
-bool debug_lex = false;
-bool debug_grammar = false;
+bool debug_lex = true;
+bool debug_grammar = true;
 bool debug_assignments = true;
 bool debug_calls = true;
 bool debug_evaluations = true;

@@ -107,6 +107,12 @@ Expression* Expression::operator == (Expression* obj)
 	return nullptr;
 }
 
+Expression* Expression::operator != (Expression* obj)
+{
+	log_calls("Expression* Expression::operator != (Expression* obj)");
+	return nullptr;
+}
+
 Expression* Expression::operator + (Expression* obj)
 {
 	log_calls("Expression* Expression::operator + (Expression* obj)");
@@ -352,6 +358,18 @@ Expression* VariableNode::operator == (Expression* obj)
 	return *environment->read(this) == objExpression;
 }
 
+Expression* VariableNode::operator != (Expression* obj)
+{
+	log_calls("Expression* VariableNode::operator != (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (obj->type == Expression::Type::VARIABLE)
+		obj->evaluate(objExpression);
+
+	return *environment->read(this) != objExpression;
+}
+
 Expression* VariableNode::operator + (Expression* obj)
 {
 	log_calls("Expression* VariableNode::operator + (Expression* obj)");
@@ -452,6 +470,27 @@ Expression* IntegerNode::operator == (Expression* obj)
 	objExpression->evaluate(objValue);
 
 	return new BooleanNode(this->value == objValue);
+}
+
+Expression* IntegerNode::operator != (Expression* obj)
+{
+	log_calls("Expression* IntegerNode::operator != (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
+
+	if (objExpression->type != Expression::Type::INTEGER)
+	{
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
+		return nullptr;
+	}
+
+	int objValue = 0;
+	objExpression->evaluate(objValue);
+
+	return new BooleanNode(this->value != objValue);
 }
 
 Expression* IntegerNode::operator + (Expression* obj)
@@ -586,6 +625,27 @@ Expression* FloatNode::operator == (Expression* obj)
 	objExpression->evaluate(objValue);
 
 	return new BooleanNode(this->value == objValue);
+}
+
+Expression* FloatNode::operator != (Expression* obj)
+{
+	log_calls("Expression* FloatNode::operator != (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
+
+	if (objExpression->type != Expression::Type::FLOAT)
+	{
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
+		return nullptr;
+	}
+
+	float objValue = 0.0;
+	objExpression->evaluate(objValue);
+
+	return new BooleanNode(this->value != objValue);
 }
 
 Expression* FloatNode::operator + (Expression* obj)
@@ -723,6 +783,27 @@ Expression* StringNode::operator == (Expression* obj)
 	return new BooleanNode(this->value == objValue);
 }
 
+Expression* StringNode::operator != (Expression* obj)
+{
+	log_calls("Expression* StringNode::operator != (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
+
+	if (objExpression->type != Expression::Type::STRING)
+	{
+		std::cout << "SYNTAX ERROR: different types when checking equality " << this->type << ", " << objExpression->type << '\n';
+		return nullptr;
+	}
+
+	std::string objValue = "";
+	objExpression->evaluate(objValue);
+
+	return new BooleanNode(this->value != objValue);
+}
+
 Expression* StringNode::operator + (Expression* obj)
 {
 	log_calls("Expression* StringNode::operator + (Expression* obj)");
@@ -786,6 +867,27 @@ Expression* BooleanNode::operator == (Expression* obj)
 	return new BooleanNode(this->value == objValue);
 }
 
+Expression* BooleanNode::operator != (Expression* obj)
+{
+	log_calls("Expression* BooleanNode::operator != (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression); // Extract the underlying expression
+
+	if (objExpression->type != Expression::Type::BOOLEAN)
+	{
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
+		return nullptr;
+	}
+
+	bool objValue = false;
+	objExpression->evaluate(objValue);
+
+	return new BooleanNode(this->value != objValue);
+}
+
 BooleanNode::~BooleanNode() {}
 
 void BooleanNode::evaluate(bool& returnValue)
@@ -818,6 +920,9 @@ BinaryOperationNode::BinaryOperationNode(Expression* left, Expression* right, Bi
 		case BinaryOperationNode::Operation::EQUALS:
 			this->value = "'=='";
 			break;
+		case BinaryOperationNode::Operation::NOT_EQUALS:
+			this->value = "'!='";
+			break;
 		case BinaryOperationNode::Operation::PLUS:
 			this->value = "'+'";
 			break;
@@ -848,6 +953,8 @@ Expression* BinaryOperationNode::execute()
 	{
 		case BinaryOperationNode::Operation::EQUALS:
 			return *left == right;
+		case BinaryOperationNode::Operation::NOT_EQUALS:
+			return *left != right;
 		case BinaryOperationNode::Operation::PLUS:
 			return *left + right;
 		case BinaryOperationNode::Operation::MINUS:
@@ -879,6 +986,12 @@ Expression* ParenthesisNode::operator == (Expression* obj)
 {
 	log_calls("Expression* ParenthesisNode::operator == (Expression* obj)");
 	return *this->expression == obj;
+}
+
+Expression* ParenthesisNode::operator != (Expression* obj)
+{
+	log_calls("Expression* ParenthesisNode::operator != (Expression* obj)");
+	return *this->expression != obj;
 }
 
 Expression* ParenthesisNode::operator + (Expression* obj)

@@ -35,6 +35,7 @@ public:
 	Expression();
 	Expression(Expression::Type type, bool isExecutable, std::string tag, std::string value);
 	virtual Expression* operator == (Expression* obj);
+	virtual Expression* operator != (Expression* obj);
 	virtual Expression* operator + (Expression* obj);
 	virtual Expression* operator - (Expression* obj);
 	virtual Expression* operator * (Expression* obj);
@@ -97,6 +98,7 @@ public:
 	VariableNode();
 	VariableNode(Environment* environment, std::string name);
 	Expression* operator == (Expression* obj);
+	Expression* operator != (Expression* obj);
 	Expression* operator + (Expression* obj);
 	Expression* operator - (Expression* obj);
 	Expression* operator * (Expression* obj);
@@ -119,6 +121,7 @@ public:
 	IntegerNode();
 	IntegerNode(int value);
 	Expression* operator == (Expression* obj);
+	Expression* operator != (Expression* obj);
 	Expression* operator + (Expression* obj);
 	Expression* operator - (Expression* obj);
 	Expression* operator * (Expression* obj);
@@ -139,6 +142,7 @@ public:
 	FloatNode();
 	FloatNode(float value);
 	Expression* operator == (Expression* obj);
+	Expression* operator != (Expression* obj);
 	Expression* operator + (Expression* obj);
 	Expression* operator - (Expression* obj);
 	Expression* operator * (Expression* obj);
@@ -158,6 +162,7 @@ public:
 	StringNode();
 	StringNode(std::string value);
 	Expression* operator == (Expression* obj);
+	Expression* operator != (Expression* obj);
 	Expression* operator + (Expression* obj);
 	~StringNode();
 
@@ -174,6 +179,7 @@ public:
 	BooleanNode();
 	BooleanNode(bool value);
 	Expression* operator == (Expression* obj);
+	Expression* operator != (Expression* obj);
 	~BooleanNode();
 
 	void evaluate(bool& returnValue);
@@ -187,7 +193,7 @@ private:
 	Expression* right;
 
 public:
-	enum Operation { EQUALS, PLUS, MINUS, MULTIPLICATION, DIVISION } operation;
+	enum Operation { EQUALS, NOT_EQUALS, PLUS, MINUS, MULTIPLICATION, DIVISION } operation;
 
 	BinaryOperationNode();
 	BinaryOperationNode(Expression* left, Expression* right, BinaryOperationNode::Operation operation);
@@ -206,6 +212,7 @@ public:
 	ParenthesisNode();
 	ParenthesisNode(Expression* expression);
 	Expression* operator == (Expression* obj);
+	Expression* operator != (Expression* obj);
 	Expression* operator + (Expression* obj);
 	Expression* operator - (Expression* obj);
 	Expression* operator * (Expression* obj);
