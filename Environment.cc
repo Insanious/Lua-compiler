@@ -24,14 +24,14 @@ void Environment::write(Expression* variable, Expression* expression)
 	std::string name = "";
 	variable->evaluate(name);
 
-	if (exists(variable))
+	/*if (exists(variable))
 	{
 		if (variables[name]->type != expression->type)
 		{
 			std::cout << "syntax error: trying to write to variable of different type\n";
 			return;
 		}
-	}
+	}*/
 
 	variables[name] = expression;
 }

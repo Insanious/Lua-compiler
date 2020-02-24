@@ -7,7 +7,7 @@ bool debug_lex = false;
 bool debug_grammar = false;
 bool debug_assignments = true;
 bool debug_calls = true;
-bool debug_evaluations = true;
+bool debug_evaluations = false;
 
 void yy::parser::error(std::string const&err)
 {

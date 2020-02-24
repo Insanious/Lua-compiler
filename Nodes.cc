@@ -273,13 +273,22 @@ Expression* AssignmentNode::execute()
 	}
 
 
-	if (environment->exists(left) && !left->sameType(rightExpression)) // Check if type doesn't match
+	if (environment->exists(left)) // Check if type doesn't match
 	{
-		Expression* leftExpression = nullptr;
-		left->evaluate(leftExpression);
+		if (!left->sameType(rightExpression))
+		{
+			Expression* leftExpression = nullptr;
+			left->evaluate(leftExpression);
+			Expression::Type lType = leftExpression->type;
+			Expression::Type rType = rightExpression->type;
 
-		std::cout << "SYNTAX ERROR: trying to assign a variable with an expression of the wrong type" << leftExpression->type << ", " << rightExpression->type << '\n';
-		return nullptr;
+			// To allow int = float and float = int
+			if (!((lType == Expression::Type::INTEGER && rType == Expression::Type::FLOAT) || (lType == Expression::Type::FLOAT && rType == Expression::Type::INTEGER)))
+			{
+				std::cout << "SYNTAX ERROR: trying to assign a variable with an expression of the wrong type" << lType << ", " << rType << '\n';
+				return nullptr;
+			}
+		}
 	}
 
 
@@ -478,10 +487,18 @@ Expression* IntegerNode::operator == (Expression* obj)
 	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
 		obj->evaluate(objExpression);
 
-	if (objExpression->type != Expression::Type::INTEGER)
+	if (objExpression->type != Expression::Type::INTEGER && objExpression->type != Expression::Type::FLOAT)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
+	}
+
+	if (objExpression->type == Expression::Type::FLOAT)
+	{
+		float objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new BooleanNode((float)this->value == objValue);
 	}
 
 	int objValue = 0;
@@ -499,10 +516,18 @@ Expression* IntegerNode::operator != (Expression* obj)
 	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
 		obj->evaluate(objExpression);
 
-	if (objExpression->type != Expression::Type::INTEGER)
+	if (objExpression->type != Expression::Type::INTEGER && objExpression->type != Expression::Type::FLOAT)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
+	}
+
+	if (objExpression->type == Expression::Type::FLOAT)
+	{
+		float objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new BooleanNode((float)this->value != objValue);
 	}
 
 	int objValue = 0;
@@ -521,10 +546,18 @@ Expression* IntegerNode::operator + (Expression* obj)
 		obj->evaluate(objExpression);
 
 
-	if (objExpression->type != Expression::Type::INTEGER)
+	if (objExpression->type != Expression::Type::INTEGER && objExpression->type != Expression::Type::FLOAT)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
+	}
+
+	if (objExpression->type == Expression::Type::FLOAT)
+	{
+		float objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new FloatNode((float)this->value + objValue);
 	}
 
 	int objValue = 0;
@@ -543,10 +576,18 @@ Expression* IntegerNode::operator - (Expression* obj)
 		obj->evaluate(objExpression);
 
 
-	if (objExpression->type != Expression::Type::INTEGER)
+	if (objExpression->type != Expression::Type::INTEGER && objExpression->type != Expression::Type::FLOAT)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
+	}
+
+	if (objExpression->type == Expression::Type::FLOAT)
+	{
+		float objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new FloatNode((float)this->value - objValue);
 	}
 
 	int objValue = 0;
@@ -565,10 +606,18 @@ Expression* IntegerNode::operator * (Expression* obj)
 		obj->evaluate(objExpression);
 
 
-	if (objExpression->type != Expression::Type::INTEGER)
+	if (objExpression->type != Expression::Type::INTEGER && objExpression->type != Expression::Type::FLOAT)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
+	}
+
+	if (objExpression->type == Expression::Type::FLOAT)
+	{
+		float objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new FloatNode((float)this->value * objValue);
 	}
 
 	int objValue = 0;
@@ -584,13 +633,28 @@ Expression* IntegerNode::operator / (Expression* obj)
 	Expression* objExpression = obj;
 
 	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
-		obj->evaluate(objExpression);
+		obj->evaluate(objExpression); // Extract expression
 
 
-	if (objExpression->type != Expression::Type::INTEGER)
+	if (objExpression->type != Expression::Type::INTEGER && objExpression->type != Expression::Type::FLOAT)
 	{
-		std::cout << "SYNTAX ERROR: different types when checking equality\n";
+		std::cout << "SYNTAX ERROR: wrong types when checking equality\n";
 		return nullptr;
+	}
+
+	// Int / Float edge-case
+	if (objExpression->type == Expression::Type::FLOAT)
+	{
+		float objValue = 0;
+		objExpression->evaluate(objValue);
+
+		if (objValue == 0.0)
+		{
+			std::cout << "SYNTAX ERROR: division by zero\n";
+			return nullptr;
+		}
+
+		return new FloatNode((float)this->value / objValue);
 	}
 
 	int objValue = 0;
@@ -602,7 +666,7 @@ Expression* IntegerNode::operator / (Expression* obj)
 		return nullptr;
 	}
 
-	return new IntegerNode(this->value / objValue);
+	return new FloatNode((float)this->value / objValue);
 }
 
 Expression* IntegerNode::operator ^ (Expression* obj)
@@ -615,16 +679,24 @@ Expression* IntegerNode::operator ^ (Expression* obj)
 		obj->evaluate(objExpression);
 
 
-	if (objExpression->type != Expression::Type::INTEGER)
+	if (objExpression->type != Expression::Type::INTEGER && objExpression->type != Expression::Type::FLOAT)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
 	}
 
+	if (objExpression->type == Expression::Type::FLOAT)
+	{
+		float objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new FloatNode(std::pow((float)this->value, objValue));
+	}
+
 	int objValue = 0;
 	objExpression->evaluate(objValue);
 
-	return new IntegerNode(std::pow(this->value, objValue));
+	return new FloatNode(std::pow((float)this->value, objValue));
 }
 
 IntegerNode::~IntegerNode() {}
@@ -655,10 +727,18 @@ Expression* FloatNode::operator == (Expression* obj)
 	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
 		obj->evaluate(objExpression);
 
-	if (objExpression->type != Expression::Type::FLOAT)
+	if (objExpression->type != Expression::Type::FLOAT && objExpression->type != Expression::Type::INTEGER)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
+	}
+
+	if (objExpression->type == Expression::Type::INTEGER)
+	{
+		int objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new BooleanNode(this->value == (float)objValue);
 	}
 
 	float objValue = 0.0;
@@ -676,10 +756,18 @@ Expression* FloatNode::operator != (Expression* obj)
 	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
 		obj->evaluate(objExpression);
 
-	if (objExpression->type != Expression::Type::FLOAT)
+	if (objExpression->type != Expression::Type::FLOAT && objExpression->type != Expression::Type::INTEGER)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
+	}
+
+	if (objExpression->type == Expression::Type::INTEGER)
+	{
+		int objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new BooleanNode(this->value != (float)objValue);
 	}
 
 	float objValue = 0.0;
@@ -698,10 +786,18 @@ Expression* FloatNode::operator + (Expression* obj)
 		obj->evaluate(objExpression);
 
 
-	if (objExpression->type != Expression::Type::FLOAT)
+	if (objExpression->type != Expression::Type::FLOAT && objExpression->type != Expression::Type::INTEGER)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
+	}
+
+	if (objExpression->type == Expression::Type::INTEGER)
+	{
+		int objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new FloatNode(this->value + (float)objValue);
 	}
 
 	float objValue = 0.0;
@@ -720,10 +816,18 @@ Expression* FloatNode::operator - (Expression* obj)
 		obj->evaluate(objExpression);
 
 
-	if (objExpression->type != Expression::Type::FLOAT)
+	if (objExpression->type != Expression::Type::FLOAT && objExpression->type != Expression::Type::INTEGER)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
+	}
+
+	if (objExpression->type == Expression::Type::INTEGER)
+	{
+		int objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new FloatNode(this->value - (float)objValue);
 	}
 
 	float objValue = 0.0;
@@ -742,10 +846,18 @@ Expression* FloatNode::operator * (Expression* obj)
 		obj->evaluate(objExpression);
 
 
-	if (objExpression->type != Expression::Type::FLOAT)
+	if (objExpression->type != Expression::Type::FLOAT && objExpression->type != Expression::Type::INTEGER)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
+	}
+
+	if (objExpression->type == Expression::Type::INTEGER)
+	{
+		int objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new FloatNode(this->value * (float)objValue);
 	}
 
 	float objValue = 0.0;
@@ -764,20 +876,22 @@ Expression* FloatNode::operator / (Expression* obj)
 		obj->evaluate(objExpression);
 
 
-	if (objExpression->type != Expression::Type::FLOAT)
+	if (objExpression->type != Expression::Type::FLOAT && objExpression->type != Expression::Type::INTEGER)
 	{
 		std::cout << "SYNTAX ERROR: different types when checking equality\n";
 		return nullptr;
 	}
 
+	if (objExpression->type == Expression::Type::INTEGER)
+	{
+		int objValue = 0;
+		objExpression->evaluate(objValue);
+
+		return new FloatNode(this->value / (float)objValue);
+	}
+
 	float objValue = 0.0;
 	objExpression->evaluate(objValue);
-
-	if (objValue == 0.0)
-	{
-		std::cout << "SYNTAX ERROR: division by zero\n";
-		return nullptr;
-	}
 
 	return new FloatNode(this->value / objValue);
 }

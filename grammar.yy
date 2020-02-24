@@ -2,6 +2,7 @@
 %defines
 %define api.value.type variant
 %define api.token.constructor
+%require "3.2"
 
 %code {
 	#define YY_DECL yy::parser::symbol_type yylex()

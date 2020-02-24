@@ -5,24 +5,75 @@ if x != 2 then
 end
 
 
+y = 0.5
+x = x + y
+
+if x != 2.5 then
+	print("fail2")
+end
+
+
 x = 2 * 2
 
 if x != 4 then
-	print("fail2")
+	print("fail3")
 end
 
 
 x = 6 / 3
 
-if x != 2 then
-	print("fail3")
+if x != 2.0 then
+	print("fail4")
 end
 
 
 x = 3 ^ 3
 
-if x != 27 then
-	print("fail4")
+if x != 27.0 then
+	print("fail5")
+end
+
+
+x = 2
+y = 2.0
+x = x + y
+
+if x != 4.0 then
+	print("fail6")
+end
+
+
+x = 3
+
+if x != 3.0 then
+	print("fail7")
+end
+
+
+x = 4
+y = 2.0
+x = x / y
+
+if (x != 2.0) then
+	print("fail8")
+end
+
+
+x = 2
+y = 1.0
+x = x - y
+
+if (x != 1.0) then
+	print("fail9")
+end
+
+
+x = 3
+y = 2.0
+x = x^y
+
+if (x != 9.0) then
+	print("fail10")
 end
 
 print("success")

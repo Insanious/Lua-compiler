@@ -6,9 +6,9 @@ check_output ()
 {
 	echo "Testing $2"
 	if [ "$1" == "success" ]; then
-		echo "-Success"
+		echo "-SUCCESS"
 	else
-		echo "-Failed, returned $1"
+		echo "-FAILED, returned $1"
 	fi
 }
 

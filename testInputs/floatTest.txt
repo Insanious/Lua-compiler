@@ -32,4 +32,67 @@ if x!= 9.0 then
 	print("fail5")
 end
 
+
+x = 2.0
+y = 2
+x = x + y
+
+if (x != 4.0) then
+	print("fail6")
+end
+
+
+x = 2.0
+y = 1
+x = x - y
+
+if (x != 1.0) then
+	print("fail7")
+end
+
+
+x = 1.0
+y = 2
+
+if (x == y) then
+	print("fail8")
+end
+
+
+x = 1.0
+y = 1
+
+if (x != y) then
+	print("fail8")
+end
+
+
+x = 4.0
+y = 2
+x = x / y
+
+if (x != 2.0) then
+	print("fail9")
+end
+
+
+x = 4.0
+y = 2
+x = x * y
+
+if (x != 8.0) then
+	print("fail10")
+end
+
+
+x = 4.0
+y = 2
+x = x ^ y
+
+if (x != 16.0) then
+	print("fail11")
+end
+
+
+
 print("success")

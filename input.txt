@@ -1,5 +1,10 @@
-x = "a"
+x = 4.0
+y = 2
+x = x ^ y
 
-print(x)
-
-print(x*10)
+if (x == 16.0) then
+	print("si senor")
+else
+	print("FAI" + ("L" * 140))
+	print(x)
+end
