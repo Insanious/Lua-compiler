@@ -4,4 +4,13 @@ if x != "a string" then
 	print("fail1")
 end
 
+
+x = "l"
+y = "o"
+z = "ng string"
+
+if (x + y * 4 + z != "loooong string") then
+	print("fail2")
+end
+
 print("success")

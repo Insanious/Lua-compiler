@@ -169,6 +169,7 @@ public:
 	Expression* operator == (Expression* obj);
 	Expression* operator != (Expression* obj);
 	Expression* operator + (Expression* obj);
+	Expression* operator * (Expression* obj);
 	~StringNode();
 
 	void evaluate(std::string& returnValue);

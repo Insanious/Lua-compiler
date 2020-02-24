@@ -897,6 +897,32 @@ Expression* StringNode::operator + (Expression* obj)
 	return new StringNode(this->value + objValue);
 }
 
+Expression* StringNode::operator * (Expression* obj)
+{
+	log_calls("Expression* StringNode::operator * (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
+
+
+	if (objExpression->type != Expression::Type::INTEGER)
+	{
+		std::cout << "SYNTAX ERROR: wrong types when checking equality\n";
+		return nullptr;
+	}
+
+	std::string result = "";
+	int objValue = 0;
+	objExpression->evaluate(objValue);
+
+	for (int i = 0; i < objValue; i++)
+		result += this->value;
+
+	return new StringNode(result);
+}
+
 StringNode::~StringNode() {}
 
 void StringNode::evaluate(std::string& returnValue)
