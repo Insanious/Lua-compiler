@@ -6,6 +6,7 @@
 #include <iostream>
 #include <queue>
 #include <fstream>
+#include <cmath>
 
 class Environment;
 
@@ -40,6 +41,7 @@ public:
 	virtual Expression* operator - (Expression* obj);
 	virtual Expression* operator * (Expression* obj);
 	virtual Expression* operator / (Expression* obj);
+	virtual Expression* operator ^ (Expression* obj);
 	~Expression();
 
 	virtual void evaluate(std::string& returnValue);
@@ -103,6 +105,7 @@ public:
 	Expression* operator - (Expression* obj);
 	Expression* operator * (Expression* obj);
 	Expression* operator / (Expression* obj);
+	Expression* operator ^ (Expression* obj);
 	~VariableNode();
 
 	void evaluate(Expression*& returnValue);
@@ -126,6 +129,7 @@ public:
 	Expression* operator - (Expression* obj);
 	Expression* operator * (Expression* obj);
 	Expression* operator / (Expression* obj);
+	Expression* operator ^ (Expression* obj);
 	~IntegerNode();
 
 	void evaluate(int& returnValue);
@@ -147,6 +151,7 @@ public:
 	Expression* operator - (Expression* obj);
 	Expression* operator * (Expression* obj);
 	Expression* operator / (Expression* obj);
+	Expression* operator ^ (Expression* obj);
 	~FloatNode();
 
 	void evaluate(float& returnValue);
@@ -193,7 +198,7 @@ private:
 	Expression* right;
 
 public:
-	enum Operation { EQUALS, NOT_EQUALS, PLUS, MINUS, MULTIPLICATION, DIVISION } operation;
+	enum Operation { EQUALS, NOT_EQUALS, PLUS, MINUS, MULTIPLICATION, DIVISION, POWER_OF } operation;
 
 	BinaryOperationNode();
 	BinaryOperationNode(Expression* left, Expression* right, BinaryOperationNode::Operation operation);
@@ -217,6 +222,7 @@ public:
 	Expression* operator - (Expression* obj);
 	Expression* operator * (Expression* obj);
 	Expression* operator / (Expression* obj);
+	Expression* operator ^ (Expression* obj);
 	~ParenthesisNode();
 
 	void evaluate(Expression*& returnValue);

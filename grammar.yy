@@ -45,7 +45,7 @@
 %token <std::string> MINUS
 %token <std::string> MUL
 %token <std::string> DIV
-%token <std::string> POWER
+%token <std::string> POWER_OF
 %token <std::string> MOD
 %token <std::string> EQUALS
 %token <std::string> NOT_EQUALS
@@ -115,6 +115,7 @@
 %type <Expression*> op
 %type <Expression*> op_1
 %type <Expression*> op_2
+%type <Expression*> op_3
 %type <Expression*> op_last
 
 
@@ -248,11 +249,11 @@ op : op_1									{
 											}
    | op EQUALS op_1							{
 												log_grammar("op:op EQUALS op_1");
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::EQUALS);
+												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::EQUALS);
 											}
    | op NOT_EQUALS op_1						{
 												log_grammar("op:op NOT_EQUALS op_1");
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::NOT_EQUALS);
+												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::NOT_EQUALS);
 											}
 
 
@@ -263,25 +264,35 @@ op_1 : op_2									{
 	 | op_1 PLUS op_2						{
 												log_grammar("op_1:op_1 PLUS op_2");
 												//$$ = new PlusNode($1, $3);
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::PLUS);
+												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::PLUS);
 											}
 	 | op_1 MINUS op_2						{
 												log_grammar("op_1:op_1 MINUS op_2");
 												//$$ = new PlusNode($1, $3);
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::MINUS);
+												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::MINUS);
 											}
 
-op_2 : op_last								{
-												log_grammar("op_2:op_last");
+op_2 : op_3								{
+												log_grammar("op_2:op_3");
 												$$ = $1;
 											}
-	 | op_2 MUL op_last						{
- 												log_grammar("op_2:op_2 MUL op_last");
- 												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::MULTIPLICATION);
+	 | op_2 MUL op_3						{
+ 												log_grammar("op_2:op_2 MUL op_3");
+ 												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::MULTIPLICATION);
  											}
-	 | op_2 DIV op_last						{
-												log_grammar("op_2:op_2 DIV op_last");
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::DIVISION);
+	 | op_2 DIV op_3						{
+												log_grammar("op_2:op_2 DIV op_3");
+												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::DIVISION);
+											}
+
+
+op_3 : op_last								{
+												log_grammar("op_3:op_last");
+												$$ = $1;
+											}
+	 | op_3 POWER_OF op_last				{
+												log_grammar("op_3:op_3 POWER_OF op_last");
+												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::POWER_OF);
 											}
 
 
@@ -293,13 +304,13 @@ op_last : TRUE								{
 												log_grammar("op_last:FALSE");
 												$$ = new BooleanNode(false);
 											}
-		| INTEGER							{
-												log_grammar("op_last:INTEGER");
-												$$ = new IntegerNode($1);
+		| FLOAT							{
+												log_grammar("op_last:FLOAT");
+												$$ = new FloatNode($1);
 											}
-		| FLOAT								{
- 												log_grammar("op_last:FLOAT");
- 												$$ = new FloatNode($1);
+		| INTEGER								{
+ 												log_grammar("op_last:INTEGER");
+ 												$$ = new IntegerNode($1);
  											}
 		| STRING							{
 												log_grammar("op_last:STRING");

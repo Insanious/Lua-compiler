@@ -37,7 +37,7 @@ in						{ log_lexer(yytext); return yy::parser::make_IN(yytext); }
 \-						{ log_lexer(yytext); return yy::parser::make_MINUS(yytext); }
 \*						{ log_lexer(yytext); return yy::parser::make_MUL(yytext); }
 \/						{ log_lexer(yytext); return yy::parser::make_DIV(yytext); }
-\^						{ log_lexer(yytext); return yy::parser::make_POWER(yytext); }
+\^						{ log_lexer(yytext); return yy::parser::make_POWER_OF(yytext); }
 \%						{ log_lexer(yytext); return yy::parser::make_MOD(yytext); }
 \=\=					{ log_lexer(yytext); return yy::parser::make_EQUALS(yytext); }
 \!\=					{ log_lexer(yytext); return yy::parser::make_NOT_EQUALS(yytext); }
@@ -66,9 +66,10 @@ return					{ log_lexer(yytext); return yy::parser::make_RETURN(yytext); }
 nil						{ log_lexer(yytext); return yy::parser::make_NIL(yytext); }
 false					{ log_lexer(yytext); return yy::parser::make_FALSE(yytext); }
 true					{ log_lexer(yytext); return yy::parser::make_TRUE(yytext); }
+[0-9]+\.[0-9]+	 		{ log_lexer(yytext); return yy::parser::make_FLOAT(std::stof(yytext)); }
 \-[0-9]+				{ log_lexer(yytext); return yy::parser::make_INTEGER(std::stoi(yytext)); }
 [0-9]+					{ log_lexer(yytext); return yy::parser::make_INTEGER(std::stoi(yytext)); }
-[0-9]\.[0-9]+	 		{ log_lexer(yytext); return yy::parser::make_FLOAT(std::stof(yytext)); }
+
 \"[^\"]*\"				{ log_lexer(yytext); std::string str = yytext; return yy::parser::make_STRING(str.substr(1, yyleng - 2)); }
 [a-zA-Z_][a-zA-Z0-9_]*	{ log_lexer(yytext); return yy::parser::make_VAR(yytext); }
 

@@ -137,6 +137,12 @@ Expression* Expression::operator / (Expression* obj)
 	return nullptr;
 }
 
+Expression* Expression::operator ^ (Expression* obj)
+{
+	log_calls("Expression* Expression::operator ^ (Expression* obj)");
+	return nullptr;
+}
+
 Expression::~Expression() {}
 
 void Expression::evaluate(std::string& returnValue)
@@ -418,6 +424,18 @@ Expression* VariableNode::operator / (Expression* obj)
 	return *environment->read(this) / objExpression;
 }
 
+Expression* VariableNode::operator ^ (Expression* obj)
+{
+	log_calls("Expression* VariableNode::operator ^ (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (obj->type == Expression::Type::VARIABLE)
+		obj->evaluate(objExpression);
+
+	return *environment->read(this) ^ objExpression;
+}
+
 VariableNode::~VariableNode() {}
 
 void VariableNode::evaluate(Expression*& returnValue)
@@ -587,6 +605,28 @@ Expression* IntegerNode::operator / (Expression* obj)
 	return new IntegerNode(this->value / objValue);
 }
 
+Expression* IntegerNode::operator ^ (Expression* obj)
+{
+	log_calls("Expression* IntegerNode::operator ^ (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
+
+
+	if (objExpression->type != Expression::Type::INTEGER)
+	{
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
+		return nullptr;
+	}
+
+	int objValue = 0;
+	objExpression->evaluate(objValue);
+
+	return new IntegerNode(std::pow(this->value, objValue));
+}
+
 IntegerNode::~IntegerNode() {}
 
 void IntegerNode::evaluate(int& returnValue)
@@ -740,6 +780,37 @@ Expression* FloatNode::operator / (Expression* obj)
 	}
 
 	return new FloatNode(this->value / objValue);
+}
+
+Expression* FloatNode::operator ^ (Expression* obj)
+{
+	log_calls("Expression* FloatNode::operator ^ (Expression* obj)");
+
+	Expression* objExpression = obj;
+
+	if (objExpression->type == Expression::Type::VARIABLE || objExpression->type == Expression::Type::PARENTHESIS)
+		obj->evaluate(objExpression);
+
+
+	if (objExpression->type != Expression::Type::FLOAT && objExpression->type != Expression::Type::INTEGER)
+	{
+		std::cout << "SYNTAX ERROR: different types when checking equality\n";
+		return nullptr;
+	}
+
+	if (objExpression->type == Expression::Type::INTEGER)
+	{
+		int objValue = 0.0;
+		objExpression->evaluate(objValue);
+
+		return new FloatNode(std::pow(this->value, objValue));
+	}
+
+	float objValue = 0.0;
+	objExpression->evaluate(objValue);
+
+	return new FloatNode(std::pow(this->value, objValue));
+
 }
 
 FloatNode::~FloatNode() {}
@@ -935,6 +1006,9 @@ BinaryOperationNode::BinaryOperationNode(Expression* left, Expression* right, Bi
 		case BinaryOperationNode::Operation::DIVISION:
 			this->value = "'/'";
 			break;
+		case BinaryOperationNode::Operation::POWER_OF:
+			this->value = "'^'";
+			break;
 	}
 }
 
@@ -963,6 +1037,8 @@ Expression* BinaryOperationNode::execute()
 			return *left * right;
 		case BinaryOperationNode::Operation::DIVISION:
 			return *left / right;
+		case BinaryOperationNode::Operation::POWER_OF:
+			return *left ^ right;
 	}
 
 	return nullptr;
@@ -1016,6 +1092,12 @@ Expression* ParenthesisNode::operator / (Expression* obj)
 {
 	log_calls("Expression* ParenthesisNode::operator / (Expression* obj)");
 	return *this->expression / obj;
+}
+
+Expression* ParenthesisNode::operator ^ (Expression* obj)
+{
+	log_calls("Expression* ParenthesisNode::operator ^ (Expression* obj)");
+	return *this->expression ^ obj;
 }
 
 void ParenthesisNode::evaluate(Expression*& returnValue)

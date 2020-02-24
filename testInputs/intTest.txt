@@ -18,4 +18,11 @@ if x != 2 then
 	print("fail3")
 end
 
+
+x = 3 ^ 3
+
+if x != 27 then
+	print("fail4")
+end
+
 print("success")

@@ -18,4 +18,18 @@ if x != 2.0 then
 	print("fail3")
 end
 
+
+x = 2.0 ^ 4.0
+
+if x != 16.0 then
+	print("fail4")
+end
+
+
+x = 3.0 ^ 2
+
+if x!= 9.0 then
+	print("fail5")
+end
+
 print("success")
