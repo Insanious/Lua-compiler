@@ -1,9 +1,3 @@
-x = "a"
-y = " with spaces"
+x = 1
 
-x = x + (" string") + y
-
-
-if x == "a string with spaces" then
-	success = true
-end
+print(x)

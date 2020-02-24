@@ -67,7 +67,7 @@
 %token <std::string> FUNCTION
 %token <std::string> BREAK
 %token <std::string> RETURN
-%token <std::string> STATIC
+%token <std::string> PRINT
 
 /* Values */
 %token <std::string> NIL
@@ -189,8 +189,12 @@ stmt : if elseifs else END					{
 												$$ = new IfStatementNode($2);
 											}
 	 | var ASSIGNMENT exp					{
-												log_grammar("stmt:VAR ASSIGNMENT VAR");
+												log_grammar("stmt:var ASSIGNMENT exp");
 												$$ = new AssignmentNode(environment, $1, $3);
+											}
+	 | PRINT exp							{
+												log_grammar("stmt:PRINT exp");
+												$$ = new PrintNode($2);
 											}
 
 
@@ -257,10 +261,10 @@ op_1 : op_last								{
 												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::PLUS);
 											}
 	 | op_1 MINUS op_last					{
-											   log_grammar("op_1:op_1 MINUS op_last");
-											   //$$ = new PlusNode($1, $3);
-											   $$ = new BinaryOperationNode($1, $3, BinaryOperationNode::MINUS);
-										   }
+												log_grammar("op_1:op_1 MINUS op_last");
+												//$$ = new PlusNode($1, $3);
+												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::MINUS);
+											}
 
 
 op_last : TRUE								{

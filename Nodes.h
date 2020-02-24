@@ -209,6 +209,20 @@ public:
 };
 
 
+class PrintNode : public Statement
+{
+private:
+	Expression* expression;
+
+public:
+	PrintNode();
+	PrintNode(Expression* expression);
+	~PrintNode();
+
+	Expression* execute();
+};
+
+
 class IfStatementNode : public Statement
 {
 private:

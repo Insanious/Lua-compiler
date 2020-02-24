@@ -236,9 +236,7 @@ Expression* AssignmentNode::execute()
 		return nullptr;
 	}
 
-	Expression* leftExpression = nullptr;
 	Expression* rightExpression = right;
-	left->evaluate(leftExpression);
 
 	if (right->type == Expression::Type::VARIABLE)
 	{
@@ -252,6 +250,9 @@ Expression* AssignmentNode::execute()
 
 	if (environment->exists(left) && !left->sameType(rightExpression)) // Check if type doesn't match
 	{
+		Expression* leftExpression = nullptr;
+		left->evaluate(leftExpression);
+
 		std::cout << "SYNTAX ERROR: trying to assign a variable with an expression of the wrong type" << leftExpression->type << ", " << rightExpression->type << '\n';
 		return nullptr;
 	}
@@ -768,6 +769,71 @@ Expression* ParenthesisNode::execute()
 		this->expression = this->expression->execute();
 
 	return this->expression;
+}
+
+
+
+PrintNode::PrintNode() {}
+
+PrintNode::PrintNode(Expression* expression) : Statement("PrintNode", "")
+{
+	this->children.push_back(expression);
+
+	this->expression = expression;
+}
+
+PrintNode::~PrintNode() {}
+
+Expression* PrintNode::execute()
+{
+	if (expression->isExecutable)
+		expression = expression->execute();
+
+	if (expression->type == Expression::Type::VARIABLE)
+		expression->evaluate(expression);
+
+
+	std::string output = "";
+	switch (expression->type)
+	{
+		case Expression::Type::STRING:
+		{
+			expression->evaluate(output);
+			break;
+		}
+		case Expression::Type::INTEGER:
+		{
+			int value = 0;
+			expression->evaluate(value);
+			output = std::to_string(value);
+			break;
+		}
+		case Expression::Type::FLOAT:
+		{
+			float value = 0.0;
+			expression->evaluate(value);
+			output = std::to_string(value);
+			break;
+		}
+		case Expression::Type::BOOLEAN:
+		{
+			bool value = false;
+			expression->evaluate(value);
+			if (value)
+				output = "true";
+			else
+				output = "false";
+			break;
+		}
+		case Expression::Type::PARENTHESIS:
+		case Expression::Type::BINARYOPERATION:
+		case Expression::Type::VARIABLE:
+			break;
+	}
+
+	std::cout << output << '\n';
+
+	return nullptr;
 }
 
 

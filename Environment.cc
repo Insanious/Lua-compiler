@@ -38,8 +38,17 @@ void Environment::write(Expression* variable, Expression* expression)
 
 bool Environment::exists(Expression* variable)
 {
+	//std::cout << "bool Environment::exists(Expression* variable)\n";
+	
 	std::string name = "";
 	variable->evaluate(name);
 
-	return variables.count(name) != 0;
+	bool doesExist = variables.count(name) != 0;
+
+	/*if (doesExist)
+		std::cout << "-Variable does exist\n";
+	else
+		std::cout << "-Variable does exist\n";*/
+
+	return doesExist;
 }
