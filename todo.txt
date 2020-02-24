@@ -19,6 +19,8 @@ Grammar:
 --- (exp)
 --- exp + exp + ... + exp
 --- exp - exp - ... - exp
+--- exp * exp * ... * exp
+--- exp / exp / ... / exp
 
 
 
@@ -32,8 +34,7 @@ Grammar:
 --break
 --return
 --binary ops
---- exp * exp
---- exp / exp
+--- exp != exp
 --- exp % exp
 --- exp < exp
 --- exp > exp

@@ -4,7 +4,13 @@ if x == 2 then
 	x = 2 * 2
 
 		if x == 4 then
-			print("success")
+			x = 6 / 3
+
+			if x == 2 then
+				print("success")
+			else
+				print("fail3")
+			end
 		else
 			print("fail2")
 		end

@@ -4,7 +4,13 @@ if x == 3.0 then
 	x = 2.0 * 2.5
 
 		if x == 5.0 then
-			print("success")
+			x = 6.0 / 3.0
+
+			if x == 2.0 then
+				print("success")
+			else
+				print("fail3")
+			end
 		else
 			print("fail2")
 		end

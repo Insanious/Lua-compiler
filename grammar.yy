@@ -248,7 +248,7 @@ op : op_1									{
    | op EQUALS op_1							{
 												log_grammar("op:op EQUALS op_1");
 												//$$ = new EqualsNode($1, $3);
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::EQUALS);
+												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::EQUALS);
 											}
 
 
@@ -259,12 +259,12 @@ op_1 : op_2								{
 	 | op_1 PLUS op_2					{
 												log_grammar("op_1:op_1 PLUS op_2");
 												//$$ = new PlusNode($1, $3);
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::PLUS);
+												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::PLUS);
 											}
 	 | op_1 MINUS op_2					{
 												log_grammar("op_1:op_1 MINUS op_2");
 												//$$ = new PlusNode($1, $3);
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::MINUS);
+												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::MINUS);
 											}
 
 op_2 : op_last								{
@@ -273,8 +273,12 @@ op_2 : op_last								{
 											}
 	 | op_2 MUL op_last						{
  												log_grammar("op_2:op_2 MUL op_last");
- 												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::MULTIPLICATION);
+ 												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::MULTIPLICATION);
  											}
+	 | op_2 DIV op_last						{
+												log_grammar("op_2:op_2 DIV op_last");
+												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::DIVISION);
+											}
 
 
 op_last : TRUE								{
