@@ -1286,7 +1286,7 @@ Expression* PrintNode::execute()
 	{
 		if (expression->isExecutable)
 			expression = expression->execute();
-
+			
 		if (expression->type == Expression::Type::VARIABLE)
 			expression->evaluate(expression);
 

@@ -2,7 +2,7 @@
 %defines
 %define api.value.type variant
 %define api.token.constructor
-%require "3.2"
+
 
 %code {
 	#define YY_DECL yy::parser::symbol_type yylex()
@@ -102,19 +102,18 @@
 
 %type <Statement*> block
 %type <std::vector<Statement*>> chunk
-%type <Statement*> optsemi
 %type <std::vector<Statement*>> stmts
 %type <Statement*> stmt
 %type <Statement*> laststmt
+//%type <Statement*> for
+%type <Statement*> assignment
 %type <Statement*> if
 %type <std::vector<Statement*>> elseifs
 %type <Statement*> elseif
 %type <Statement*> else
 
 %type <std::vector<Expression*>> explist
-%type <std::vector<Expression*>> varlist
 %type <Expression*> exp
-%type <Expression*> var
 %type <Expression*> op
 %type <Expression*> op_1
 %type <Expression*> op_2
@@ -127,35 +126,39 @@
 
 block : chunk								{ log_grammar("block:chunk"); $$ = new Block($1); root = $$; }
 
-chunk : stmts								{ log_grammar("chunk:stmts"); $$ = $1; }
-	  | chunk laststmt						{ log_grammar("chunk:chunk laststmt"); $$ = $1; if ($2) $$.push_back($2); }
-	  | laststmt							{ log_grammar("chunk:laststmt"); if ($1) $$.push_back($1); }
+chunk : stmts								{ log_grammar("chunk:stmts"); 						$$ = $1; }
+	  | chunk laststmt						{ log_grammar("chunk:chunk laststmt"); 				$$ = $1; $$.push_back($2); }
+	  | chunk laststmt SEMICOLON			{ log_grammar("chunk:chunk laststmt SEMICOLON"); 	$$ = $1; $$.push_back($2); }
 
-laststmt : /* empty */						{ log_grammar("laststmt:empty");$$ = nullptr; }
-		 | RETURN exp/*list*/ optsemi		{ log_grammar("laststmt:RETURN exp optsemi"); $$ = new ReturnNode($2); }
-		 | BREAK optsemi					{ log_grammar("laststmt:BREAK optsemi"); $$ = new BreakNode(); 	}
+laststmt : RETURN exp/*list*/ 				{ log_grammar("laststmt:RETURN exp optsemi"); 	$$ = new ReturnNode($2); }
+		 | BREAK 							{ log_grammar("laststmt:BREAK optsemi"); 		$$ = new BreakNode(); 	}
 
-optsemi : /* empty */						{ log_grammar("optsemi:empty"); $$ = nullptr; }
-		| SEMICOLON							{ log_grammar("optsemi:SEMICOLON"); $$ = new SemicolonNode($1); }
+stmts : stmt								{ log_grammar("stmts:stmt"); 				$$.push_back($1); }
+	  | stmt SEMICOLON						{ log_grammar("stmts:stmt"); 				$$.push_back($1); }
+	  | stmts stmt							{ log_grammar("stmts:stmts stmt optsemi"); 	$$ = $1; $$.push_back($2); }
+	  | stmts SEMICOLON stmt				{ log_grammar("stmts:stmts stmt optsemi"); 	$$ = $1; $$.push_back($3); }
 
-stmts : stmt optsemi						{ log_grammar("stmts:stmt optsemi"); $$.push_back($1); if ($2) $$.push_back($2); }
-	  | stmts stmt optsemi					{ log_grammar("stmts:stmts stmt optsemi"); $$ = $1; $$.push_back($2); if ($3) $$.push_back($3); }
+stmt : if elseifs else END					{ log_grammar("stmt:ifstatement END");				$2.insert($2.begin(), $1); if ($3) $2.push_back($3); $$ = new IfStatementNode($2); }
+	 | assignment							{ log_grammar("stmt:assignment");					$$ = $1; }
+	 | PRINT explist						{ log_grammar("stmt:PRINT explist"); 				$$ = new PrintNode($2); }
+	 | PRINT LROUND explist RROUND			{ log_grammar("stmt:PRINT LROUND explist RROUND");	$$ = new PrintNode($3); }
+//	 | for 									{ log_grammar("stmt:for"); 							$$ = $1; }
 
-stmt : if elseifs else END					{ log_grammar("stmt:if elseifs else END"); $2.insert($2.begin(), $1); if ($3) $2.push_back($3); $$ = new IfStatementNode($2); }
-	 | var ASSIGNMENT exp					{ log_grammar("stmt:var ASSIGNMENT exp"); $$ = new AssignmentNode(environment, $1, $3); }
-	 | PRINT varlist						{ log_grammar("stmt:PRINT explist"); $$ = new PrintNode($2); }
+assignment : VAR ASSIGNMENT exp				{ log_grammar("assignment:VAR ASSIGNMENT exp"); $$ = new AssignmentNode(environment, new VariableNode(environment, $1), $3); }
 
-if : IF exp THEN block						{ log_grammar("if:IF exp THEN block"); $$ = new IfNode($2, $4); 	}
+//for : FOR assignment COMMA exp DO block		{ log_grammar("for:FOR VAR ASSIGNMENT exp COMMA exp"); $$ = new ForNode($2, $4, $6); }
+
+if : IF exp THEN block						{ log_grammar("if:IF exp THEN block"); $$ = new IfNode($2, $4); }
 
 elseifs : /* empty */						{ log_grammar("elseifs:empty"); }
-		| elseif							{ log_grammar("elseifs: ELSEIF"); $$.push_back($1); 	}
-		| elseifs elseif					{ log_grammar("elseifs:elseifs elseif"); $$ = $1; $$.push_back($2); }
+		| elseif							{ log_grammar("elseifs: ELSEIF");			$$.push_back($1); 	}
+		| elseifs elseif					{ log_grammar("elseifs:elseifs elseif");	$$ = $1; $$.push_back($2); }
 
 elseif : ELSEIF exp THEN block				{ log_grammar("elseif:ELSEIF exp THEN block"); $$ = new IfNode($2, $4); 	}
 
-else : /* empty */							{ log_grammar("else:empty"); 	}
+else : /* empty */							{ log_grammar("else:empty"); }
 	 | ELSE block							{ log_grammar("else:ELSE block"); $$ = new ElseNode($2); }
-
+//
 explist : exp 								{ log_grammar("explist:exp"); $$.push_back($1); }
 		| explist COMMA exp					{ log_grammar("explist:explist exp"); $$ = $1; $$.push_back($3); }
 
@@ -181,11 +184,5 @@ op_last : TRUE								{ log_grammar("op_last:TRUE"); 				$$ = new BooleanNode(tr
 		| FLOAT								{ log_grammar("op_last:FLOAT"); 			$$ = new FloatNode($1); }
 		| INTEGER							{ log_grammar("op_last:INTEGER"); 			$$ = new IntegerNode($1); }
 		| STRING							{ log_grammar("op_last:STRING"); 			$$ = new StringNode($1); }
-		| var								{ log_grammar("op_last:VAR"); 				$$ = $1; }
-		| LROUND var RROUND					{ log_grammar("op_last:VAR"); 				$$ = new ParenthesisNode($2); }
+		| VAR								{ log_grammar("op_last:VAR"); 				$$ = new VariableNode(environment, $1); }
 		| LROUND exp RROUND					{ log_grammar("op_last:LROUND exp RROUND"); $$ = new ParenthesisNode($2); }
-
-var : VAR									{ log_grammar("var:VAR"); $$ = new VariableNode(environment, $1); }
-
-varlist : var								{ log_grammar("varlist:VAR"); $$.push_back($1); }
-		| varlist COMMA var					{ log_grammar("varlist:varlist COMMA VAR"); $$ = $1; $$.push_back($3); }
