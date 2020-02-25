@@ -249,6 +249,12 @@ Expression* AssignmentNode::execute()
 {
 	log_calls("Expression* AssignmentNode::execute()");
 
+	if (right->type == Expression::Type::IO_READ) // SUPER EARLY RETURN
+	{
+		std::cout << "SYNTAX ERROR: non-VARIABLE assignment\n";
+		return nullptr;
+	}
+
 	if (left->isExecutable)
 		left = left->execute();
 	if (right->isExecutable)
@@ -341,6 +347,7 @@ Expression* AssignmentNode::execute()
 		}
 		case Expression::Type::PARENTHESIS:
 		case Expression::Type::BINARYOPERATION:
+		case Expression::Type::IO_READ:
 			break;
 	}
 
@@ -1149,6 +1156,9 @@ BinaryOperationNode::BinaryOperationNode(Expression* left, Expression* right, Bi
 		case BinaryOperationNode::Operation::POWER_OF:
 			this->value = "'^'";
 			break;
+		case BinaryOperationNode::Operation::MODULUS:
+			this->value = "'%'";
+			break;
 	}
 }
 
@@ -1179,6 +1189,9 @@ Expression* BinaryOperationNode::execute()
 			return *left / right;
 		case BinaryOperationNode::Operation::POWER_OF:
 			return *left ^ right;
+		case BinaryOperationNode::Operation::MODULUS:
+			//return *left % right;
+			return nullptr;
 	}
 
 	return nullptr;
@@ -1264,6 +1277,81 @@ Expression* ParenthesisNode::execute()
 	return this->expression;
 }
 
+IOReadNode::IOReadNode() {}
+
+IOReadNode::IOReadNode(Expression* variable) : Expression(Expression::Type::IO_READ, true, "IOReadNode", "")
+{
+	this->children.push_back(variable);
+
+	this->variable = variable;
+}
+
+IOReadNode::IOReadNode(std::string type) : Expression(Expression::Type::IO_READ, true, "IOReadNode", "")
+{
+	if (type == "*number")
+		this->children.push_back(new StringNode("number"));
+
+	this->variable = variable;
+}
+
+IOReadNode::~IOReadNode() {}
+
+Expression* IOReadNode::execute()
+{
+	log_calls("Expression* IOWriteNode::execute()");
+
+	return nullptr;
+}
+
+
+
+IOWriteNode::IOWriteNode() {}
+
+IOWriteNode::IOWriteNode(std::vector<Expression*> expressions) : Statement("IOWriteNode", "")
+{
+	for(auto expression : expressions)
+		this->children.push_back(expression);
+
+	this->expressions = expressions;
+}
+
+IOWriteNode::~IOWriteNode() {}
+
+Expression* IOWriteNode::execute()
+{
+	log_calls("Expression* IOWriteNode::execute()");
+
+	return nullptr;
+}
+
+
+
+ForNode::ForNode() {}
+
+ForNode::~ForNode() {}
+
+ForNode::ForNode(Expression* variable, std::vector<Expression*> explist, Statement* block) : Statement("ForNode", "")
+{
+	log_calls("ForNode::ForNode(Expression* variable, std::vector<Expression*> explist, Expression* expression, Statement* block)");
+
+	for (auto expression : explist)
+		this->children.push_back(expression);
+
+	this->children.push_back(variable);
+	this->children.push_back(block);
+
+	this->variable = variable;
+	this->explist = explist;
+	this->block = block;
+}
+
+Expression* ForNode::execute()
+{
+	log_calls("Expression* ForNode::execute()");
+
+	return nullptr;
+}
+
 
 
 PrintNode::PrintNode() {}
@@ -1286,7 +1374,7 @@ Expression* PrintNode::execute()
 	{
 		if (expression->isExecutable)
 			expression = expression->execute();
-			
+
 		if (expression->type == Expression::Type::VARIABLE)
 			expression->evaluate(expression);
 
@@ -1294,7 +1382,9 @@ Expression* PrintNode::execute()
 		{
 			case Expression::Type::STRING:
 			{
-				expression->evaluate(output);
+				std::string value = "";
+				expression->evaluate(value);
+				output += value;
 				break;
 			}
 			case Expression::Type::INTEGER:
@@ -1323,6 +1413,7 @@ Expression* PrintNode::execute()
 			}
 			case Expression::Type::PARENTHESIS:
 			case Expression::Type::BINARYOPERATION:
+			case Expression::Type::IO_READ:
 			case Expression::Type::VARIABLE:
 				break;
 		}
@@ -1521,6 +1612,8 @@ Block::Block(std::vector<Statement*> statements) : Statement("Block", "")
 
 	for(auto statement : statements)
 		this->children.push_back(statement);
+
+
 
 	this->statements = statements;
 }

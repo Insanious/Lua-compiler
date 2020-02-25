@@ -1,4 +1,7 @@
-x = "hej"
-y = "då"
 
-print(x, y)
+n = io.read("*number");
+for i = 2,10 do
+	print(2)
+end
+
+print("success")

@@ -29,7 +29,7 @@ public:
 class Expression : public Node
 {
 public:
-	enum Type { VARIABLE, STRING, INTEGER, FLOAT, BOOLEAN, PARENTHESIS, BINARYOPERATION } type;
+	enum Type { VARIABLE, STRING, INTEGER, FLOAT, BOOLEAN, PARENTHESIS, BINARYOPERATION, IO_READ } type;
 
 	bool isExecutable;
 
@@ -199,7 +199,7 @@ private:
 	Expression* right;
 
 public:
-	enum Operation { EQUALS, NOT_EQUALS, PLUS, MINUS, MULTIPLICATION, DIVISION, POWER_OF } operation;
+	enum Operation { EQUALS, NOT_EQUALS, PLUS, MINUS, MULTIPLICATION, DIVISION, MODULUS, POWER_OF } operation;
 
 	BinaryOperationNode();
 	BinaryOperationNode(Expression* left, Expression* right, BinaryOperationNode::Operation operation);
@@ -228,6 +228,53 @@ public:
 
 	void evaluate(Expression*& returnValue);
 	void evaluate(bool& returnValue);
+
+	Expression* execute();
+};
+
+
+class IOReadNode : public Expression
+{
+private:
+	Expression* variable;
+
+public:
+	IOReadNode();
+	IOReadNode(Expression* variable);
+	IOReadNode(std::string type);
+	~IOReadNode();
+
+	Expression* execute();
+};
+
+
+class IOWriteNode : public Statement
+{
+private:
+	std::vector<Expression*> expressions;
+
+public:
+	IOWriteNode();
+	IOWriteNode(std::vector<Expression*> expressions);
+	~IOWriteNode();
+
+	Expression* execute();
+};
+
+
+class ForNode : public Statement
+{
+private:
+	Expression* variable;
+	std::vector<Expression*> explist;
+	Statement* block;
+
+	Environment* environment;
+
+public:
+	ForNode();
+	ForNode(Expression* variable, std::vector<Expression*> explist, Statement* block);
+	~ForNode();
 
 	Expression* execute();
 };

@@ -60,7 +60,14 @@ local					{ log_lexer(yytext); return yy::parser::make_LOCAL(yytext); }
 function				{ log_lexer(yytext); return yy::parser::make_FUNCTION(yytext); }
 break					{ log_lexer(yytext); return yy::parser::make_BREAK(yytext); }
 return					{ log_lexer(yytext); return yy::parser::make_RETURN(yytext); }
-(print)					{ log_lexer(yytext); return yy::parser::make_PRINT(yytext); }
+print					{ log_lexer(yytext); return yy::parser::make_PRINT(yytext); }
+io\.write				{ log_lexer(yytext); return yy::parser::make_IO_WRITE(yytext); }
+io\.read				{ log_lexer(yytext); return yy::parser::make_IO_READ(yytext); }
+
+ /* Arguments */
+\"\*number\"			{ log_lexer(yytext); return yy::parser::make_IO_READ_NUMBER(yytext); }
+\"\*line\"				{ log_lexer(yytext); return yy::parser::make_IO_READ_LINE(yytext); }
+\"\*all\"				{ log_lexer(yytext); return yy::parser::make_IO_READ_ALL(yytext); }
 
  /* Values */
 nil						{ log_lexer(yytext); return yy::parser::make_NIL(yytext); }
@@ -70,7 +77,7 @@ true					{ log_lexer(yytext); return yy::parser::make_TRUE(yytext); }
 \-[0-9]+				{ log_lexer(yytext); return yy::parser::make_INTEGER(std::stoi(yytext)); }
 [0-9]+					{ log_lexer(yytext); return yy::parser::make_INTEGER(std::stoi(yytext)); }
 
-\"[^\"]*\"				{ log_lexer(yytext); std::string str = yytext; return yy::parser::make_STRING(str.substr(1, yyleng - 2)); }
+\"[^\*\"]*\"			{ log_lexer(yytext); std::string str = yytext; return yy::parser::make_STRING(str.substr(1, yyleng - 2)); }
 [a-zA-Z_][a-zA-Z0-9_]*	{ log_lexer(yytext); return yy::parser::make_VAR(yytext); }
 
  /* Single-character tokens */
