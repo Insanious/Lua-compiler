@@ -70,6 +70,11 @@
 %token <std::string> BREAK
 %token <std::string> RETURN
 %token <std::string> PRINT
+%token <std::string> IO_WRITE
+%token <std::string> IO_READ
+%token <std::string> IO_READ_NUMBER
+%token <std::string> IO_READ_LINE
+%token <std::string> IO_READ_ALL
 
 /* Values */
 %token <std::string> NIL
@@ -105,14 +110,16 @@
 %type <std::vector<Statement*>> stmts
 %type <Statement*> stmt
 %type <Statement*> laststmt
-//%type <Statement*> for
+%type <Statement*> for
 %type <Statement*> assignment
 %type <Statement*> if
 %type <std::vector<Statement*>> elseifs
 %type <Statement*> elseif
 %type <Statement*> else
 
+%type <Expression*> ioread
 %type <std::vector<Expression*>> explist
+%type <Expression*> var
 %type <Expression*> exp
 %type <Expression*> op
 %type <Expression*> op_1
@@ -142,11 +149,19 @@ stmt : if elseifs else END					{ log_grammar("stmt:ifstatement END");				$2.inse
 	 | assignment							{ log_grammar("stmt:assignment");					$$ = $1; }
 	 | PRINT explist						{ log_grammar("stmt:PRINT explist"); 				$$ = new PrintNode($2); }
 	 | PRINT LROUND explist RROUND			{ log_grammar("stmt:PRINT LROUND explist RROUND");	$$ = new PrintNode($3); }
-//	 | for 									{ log_grammar("stmt:for"); 							$$ = $1; }
+	 | for END								{ log_grammar("stmt:for END"); 							$$ = $1; }
+	 //| ioread								{ log_grammar("stmt:IO_READ LROUND var RROUND");	$$ = $1; }
+	 | IO_WRITE LROUND explist RROUND		{ log_grammar("stmt:IO_WRITE LROUND var RROUND");	$$ = new IOWriteNode($3); }
+
+ioread : IO_READ LROUND exp RROUND				{ log_grammar("ioread:IO_READ (exp)");		$$ = new IOReadNode($3); }
+ 	   | IO_READ LROUND IO_READ_NUMBER RROUND	{ log_grammar("ioread:IO_READ (*number)");	$$ = new IOReadNode($3); }
+ 	   | IO_READ LROUND IO_READ_LINE RROUND		{ log_grammar("ioread:IO_READ (*line)");	$$ = new IOReadNode($3); }
+	   | IO_READ LROUND IO_READ_ALL RROUND		{ log_grammar("ioread:IO_READ (*all)");		$$ = new IOReadNode($3); }
 
 assignment : VAR ASSIGNMENT exp				{ log_grammar("assignment:VAR ASSIGNMENT exp"); $$ = new AssignmentNode(environment, new VariableNode(environment, $1), $3); }
+ 		   | VAR ASSIGNMENT ioread						{ log_grammar("assignment:VAR ioread"); $$ = new AssignmentNode(environment, new VariableNode(environment, $1), $3); }
 
-//for : FOR assignment COMMA exp DO block		{ log_grammar("for:FOR VAR ASSIGNMENT exp COMMA exp"); $$ = new ForNode($2, $4, $6); }
+for : FOR var ASSIGNMENT explist DO block	{ log_grammar("for:FOR var ASSIGNMENT exp COMMA exp"); $$ = new ForNode($2, $4, $6); }
 
 if : IF exp THEN block						{ log_grammar("if:IF exp THEN block"); $$ = new IfNode($2, $4); }
 
@@ -154,13 +169,15 @@ elseifs : /* empty */						{ log_grammar("elseifs:empty"); }
 		| elseif							{ log_grammar("elseifs: ELSEIF");			$$.push_back($1); 	}
 		| elseifs elseif					{ log_grammar("elseifs:elseifs elseif");	$$ = $1; $$.push_back($2); }
 
-elseif : ELSEIF exp THEN block				{ log_grammar("elseif:ELSEIF exp THEN block"); $$ = new IfNode($2, $4); 	}
+elseif : ELSEIF exp THEN block				{ log_grammar("elseif:ELSEIF exp THEN block"); $$ = new IfNode($2, $4); }
 
 else : /* empty */							{ log_grammar("else:empty"); }
 	 | ELSE block							{ log_grammar("else:ELSE block"); $$ = new ElseNode($2); }
 //
-explist : exp 								{ log_grammar("explist:exp"); $$.push_back($1); }
-		| explist COMMA exp					{ log_grammar("explist:explist exp"); $$ = $1; $$.push_back($3); }
+explist : exp 								{ log_grammar("explist:exp");			$$.push_back($1); }
+		| explist COMMA exp					{ log_grammar("explist:explist exp");	$$ = $1; $$.push_back($3); }
+
+var : VAR 									{ log_grammar("var:VAR"); $$ = new VariableNode(environment, $1); }
 
 exp : op									{ log_grammar("exp:op"); $$ = $1; }
 
@@ -175,6 +192,7 @@ op_1 : op_2									{ log_grammar("op_1:op_2");			$$ = $1; }
 op_2 : op_3									{ log_grammar("op_2:op_3"); 		$$ = $1; }
 	 | op_2 MUL op_3						{ log_grammar("op_2:op_2 * op_3");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::MULTIPLICATION); }
 	 | op_2 DIV op_3						{ log_grammar("op_2:op_2 / op_3");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::DIVISION); }
+	 | op_2 MOD op_3						{ log_grammar("op_2:op_2 % op_3");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::MODULUS); }
 
 op_3 : op_last								{ log_grammar("op_3:op_last");			$$ = $1; }
 	 | op_3 POWER_OF op_last				{ log_grammar("op_3:op_3 ^ op_last");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::POWER_OF); }
