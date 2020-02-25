@@ -111,6 +111,8 @@
 %type <Statement*> elseif
 %type <Statement*> else
 
+%type <std::vector<Expression*>> explist
+%type <std::vector<Expression*>> varlist
 %type <Expression*> exp
 %type <Expression*> var
 %type <Expression*> op
@@ -123,211 +125,67 @@
 
 %%
 
-block : chunk								{
-												log_grammar("block:chunk");
-												$$ = new Block($1);
-												root = $$;
-											}
+block : chunk								{ log_grammar("block:chunk"); $$ = new Block($1); root = $$; }
 
-chunk : stmts								{
-												log_grammar("chunk:stmts");
-												$$ = $1;
-											}
-	  | chunk laststmt						{
-												log_grammar("chunk:chunk laststmt");
-												$$ = $1;
-												if ($2)
-													$$.push_back($2);
-											}
-	  | laststmt							{
-												log_grammar("chunk:laststmt");
-												if ($1)
-													$$.push_back($1);
-											}
+chunk : stmts								{ log_grammar("chunk:stmts"); $$ = $1; }
+	  | chunk laststmt						{ log_grammar("chunk:chunk laststmt"); $$ = $1; if ($2) $$.push_back($2); }
+	  | laststmt							{ log_grammar("chunk:laststmt"); if ($1) $$.push_back($1); }
 
+laststmt : /* empty */						{ log_grammar("laststmt:empty");$$ = nullptr; }
+		 | RETURN exp/*list*/ optsemi		{ log_grammar("laststmt:RETURN exp optsemi"); $$ = new ReturnNode($2); }
+		 | BREAK optsemi					{ log_grammar("laststmt:BREAK optsemi"); $$ = new BreakNode(); 	}
 
-laststmt : /* empty */						{
-												log_grammar("laststmt:empty");
-												$$ = nullptr;
-											}
-		 | RETURN exp/*list*/ optsemi		{
-												log_grammar("laststmt:RETURN exp optsemi");
-												$$ = new ReturnNode($2);
-					 						}
-		 | BREAK optsemi					{
-												log_grammar("laststmt:BREAK optsemi");
-												$$ = new BreakNode();
-											}
+optsemi : /* empty */						{ log_grammar("optsemi:empty"); $$ = nullptr; }
+		| SEMICOLON							{ log_grammar("optsemi:SEMICOLON"); $$ = new SemicolonNode($1); }
 
+stmts : stmt optsemi						{ log_grammar("stmts:stmt optsemi"); $$.push_back($1); if ($2) $$.push_back($2); }
+	  | stmts stmt optsemi					{ log_grammar("stmts:stmts stmt optsemi"); $$ = $1; $$.push_back($2); if ($3) $$.push_back($3); }
 
-optsemi : /* empty */						{
-												log_grammar("optsemi:empty");
-												$$ = nullptr;
-											}
-		| SEMICOLON							{
-												log_grammar("optsemi:SEMICOLON");
-												$$ = new SemicolonNode($1);
-											}
+stmt : if elseifs else END					{ log_grammar("stmt:if elseifs else END"); $2.insert($2.begin(), $1); if ($3) $2.push_back($3); $$ = new IfStatementNode($2); }
+	 | var ASSIGNMENT exp					{ log_grammar("stmt:var ASSIGNMENT exp"); $$ = new AssignmentNode(environment, $1, $3); }
+	 | PRINT varlist						{ log_grammar("stmt:PRINT explist"); $$ = new PrintNode($2); }
 
+if : IF exp THEN block						{ log_grammar("if:IF exp THEN block"); $$ = new IfNode($2, $4); 	}
 
-stmts : stmt optsemi						{
-												log_grammar("stmts:stmt optsemi");
-												$$.push_back($1);
-												if ($2)
-													$$.push_back($2);
-											}
-	  | stmts stmt optsemi					{
-												log_grammar("stmts:stmts stmt optsemi");
-												$$ = $1;
-												$$.push_back($2);
-												if ($3)
-													$$.push_back($3);
-											}
+elseifs : /* empty */						{ log_grammar("elseifs:empty"); }
+		| elseif							{ log_grammar("elseifs: ELSEIF"); $$.push_back($1); 	}
+		| elseifs elseif					{ log_grammar("elseifs:elseifs elseif"); $$ = $1; $$.push_back($2); }
 
+elseif : ELSEIF exp THEN block				{ log_grammar("elseif:ELSEIF exp THEN block"); $$ = new IfNode($2, $4); 	}
 
-stmt : if elseifs else END					{
-												log_grammar("stmt:if elseifs else END");
-												$2.insert($2.begin(), $1); // Insert the 'if' at front
-												if ($3)
-													$2.push_back($3); // Push back the 'else' if it exists
-												$$ = new IfStatementNode($2);
-											}
-	 | var ASSIGNMENT exp					{
-												log_grammar("stmt:var ASSIGNMENT exp");
-												$$ = new AssignmentNode(environment, $1, $3);
-											}
-	 | PRINT exp							{
-												log_grammar("stmt:PRINT exp");
-												$$ = new PrintNode($2);
-											}
+else : /* empty */							{ log_grammar("else:empty"); 	}
+	 | ELSE block							{ log_grammar("else:ELSE block"); $$ = new ElseNode($2); }
 
+explist : exp 								{ log_grammar("explist:exp"); $$.push_back($1); }
+		| explist COMMA exp					{ log_grammar("explist:explist exp"); $$ = $1; $$.push_back($3); }
 
-if : IF exp THEN block						{
-												log_grammar("if:IF exp THEN block");
-												$$ = new IfNode($2, $4);
-											}
+exp : op									{ log_grammar("exp:op"); $$ = $1; }
 
+op : op_1									{ log_grammar("op:op_1");		$$ = $1; }
+   | op EQUALS op_1							{ log_grammar("op:op == op_1");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::EQUALS); }
+   | op NOT_EQUALS op_1						{ log_grammar("op:op != op_1");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::NOT_EQUALS); }
 
-elseifs : /* empty */						{
-												log_grammar("elseifs:empty");
-											}
-		| elseif							{
-												log_grammar("elseifs: ELSEIF");
-												$$.push_back($1);
-											}
-		| elseifs elseif					{
-												log_grammar("elseifs:elseifs elseif");
-												$$ = $1;
-												$$.push_back($2);
-											}
+op_1 : op_2									{ log_grammar("op_1:op_2");			$$ = $1; }
+	 | op_1 PLUS op_2						{ log_grammar("op_1:op_1 + op_2");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::PLUS); }
+	 | op_1 MINUS op_2						{ log_grammar("op_1:op_1 - op_2");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::MINUS); }
 
+op_2 : op_3									{ log_grammar("op_2:op_3"); 		$$ = $1; }
+	 | op_2 MUL op_3						{ log_grammar("op_2:op_2 * op_3");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::MULTIPLICATION); }
+	 | op_2 DIV op_3						{ log_grammar("op_2:op_2 / op_3");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::DIVISION); }
 
-elseif : ELSEIF exp THEN block				{
-												log_grammar("elseif:ELSEIF exp THEN block");
-												$$ = new IfNode($2, $4);
-											}
+op_3 : op_last								{ log_grammar("op_3:op_last");			$$ = $1; }
+	 | op_3 POWER_OF op_last				{ log_grammar("op_3:op_3 ^ op_last");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::POWER_OF); }
 
+op_last : TRUE								{ log_grammar("op_last:TRUE"); 				$$ = new BooleanNode(true); }
+		| FALSE								{ log_grammar("op_last:FALSE"); 			$$ = new BooleanNode(false); }
+		| FLOAT								{ log_grammar("op_last:FLOAT"); 			$$ = new FloatNode($1); }
+		| INTEGER							{ log_grammar("op_last:INTEGER"); 			$$ = new IntegerNode($1); }
+		| STRING							{ log_grammar("op_last:STRING"); 			$$ = new StringNode($1); }
+		| var								{ log_grammar("op_last:VAR"); 				$$ = $1; }
+		| LROUND var RROUND					{ log_grammar("op_last:VAR"); 				$$ = new ParenthesisNode($2); }
+		| LROUND exp RROUND					{ log_grammar("op_last:LROUND exp RROUND"); $$ = new ParenthesisNode($2); }
 
-else : /* empty */							{
-												log_grammar("else:empty");
-												//$$ = new ElseNode();
-											}
-	 | ELSE block							{
-												log_grammar("else:ELSE block");
-												$$ = new ElseNode($2);
-											}
+var : VAR									{ log_grammar("var:VAR"); $$ = new VariableNode(environment, $1); }
 
-
-exp : op									{
-												log_grammar("exp:op");
-												$$ = $1;
-											}
-
-
-op : op_1									{
-												log_grammar("op:op_1");
-												$$ = $1;
-											}
-   | op EQUALS op_1							{
-												log_grammar("op:op EQUALS op_1");
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::EQUALS);
-											}
-   | op NOT_EQUALS op_1						{
-												log_grammar("op:op NOT_EQUALS op_1");
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::NOT_EQUALS);
-											}
-
-
-op_1 : op_2									{
-												log_grammar("op_1:op_2");
-												$$ = $1;
-											}
-	 | op_1 PLUS op_2						{
-												log_grammar("op_1:op_1 PLUS op_2");
-												//$$ = new PlusNode($1, $3);
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::PLUS);
-											}
-	 | op_1 MINUS op_2						{
-												log_grammar("op_1:op_1 MINUS op_2");
-												//$$ = new PlusNode($1, $3);
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::MINUS);
-											}
-
-op_2 : op_3								{
-												log_grammar("op_2:op_3");
-												$$ = $1;
-											}
-	 | op_2 MUL op_3						{
- 												log_grammar("op_2:op_2 MUL op_3");
- 												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::MULTIPLICATION);
- 											}
-	 | op_2 DIV op_3						{
-												log_grammar("op_2:op_2 DIV op_3");
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::DIVISION);
-											}
-
-
-op_3 : op_last								{
-												log_grammar("op_3:op_last");
-												$$ = $1;
-											}
-	 | op_3 POWER_OF op_last				{
-												log_grammar("op_3:op_3 POWER_OF op_last");
-												$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::POWER_OF);
-											}
-
-
-op_last : TRUE								{
-												log_grammar("op_last:TRUE");
-												$$ = new BooleanNode(true);
-											}
-		| FALSE								{
-												log_grammar("op_last:FALSE");
-												$$ = new BooleanNode(false);
-											}
-		| FLOAT							{
-												log_grammar("op_last:FLOAT");
-												$$ = new FloatNode($1);
-											}
-		| INTEGER								{
- 												log_grammar("op_last:INTEGER");
- 												$$ = new IntegerNode($1);
- 											}
-		| STRING							{
-												log_grammar("op_last:STRING");
-												$$ = new StringNode($1);
-											}
-		| VAR								{
-												log_grammar("op_last:VAR");
-												$$ = new VariableNode(environment, $1);
-											}
-		| LROUND exp RROUND					{
-												log_grammar("op_last:LROUND exp RROUND");
-												$$ = new ParenthesisNode($2);
-											}
-
-
-var : VAR									{
-												log_grammar("var:VAR");
-												$$ = new VariableNode(environment, $1);
-											}
+varlist : var								{ log_grammar("varlist:VAR"); $$.push_back($1); }
+		| varlist COMMA var					{ log_grammar("varlist:varlist COMMA VAR"); $$ = $1; $$.push_back($3); }

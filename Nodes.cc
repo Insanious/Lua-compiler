@@ -1268,60 +1268,66 @@ Expression* ParenthesisNode::execute()
 
 PrintNode::PrintNode() {}
 
-PrintNode::PrintNode(Expression* expression) : Statement("PrintNode", "")
+PrintNode::PrintNode(std::vector<Expression*>  expressions) : Statement("PrintNode", "")
 {
-	this->children.push_back(expression);
+	for (auto expression : expressions)
+		this->children.push_back(expression);
 
-	this->expression = expression;
+	this->expressions = expressions;
 }
 
 PrintNode::~PrintNode() {}
 
 Expression* PrintNode::execute()
 {
-	if (expression->isExecutable)
-		expression = expression->execute();
-
-	if (expression->type == Expression::Type::VARIABLE)
-		expression->evaluate(expression);
-
-
 	std::string output = "";
-	switch (expression->type)
+
+	for (auto expression : this->expressions)
 	{
-		case Expression::Type::STRING:
+		if (expression->isExecutable)
+			expression = expression->execute();
+
+		if (expression->type == Expression::Type::VARIABLE)
+			expression->evaluate(expression);
+
+		switch (expression->type)
 		{
-			expression->evaluate(output);
-			break;
+			case Expression::Type::STRING:
+			{
+				expression->evaluate(output);
+				break;
+			}
+			case Expression::Type::INTEGER:
+			{
+				int value = 0;
+				expression->evaluate(value);
+				output += std::to_string(value);
+				break;
+			}
+			case Expression::Type::FLOAT:
+			{
+				float value = 0.0;
+				expression->evaluate(value);
+				output += std::to_string(value);
+				break;
+			}
+			case Expression::Type::BOOLEAN:
+			{
+				bool value = false;
+				expression->evaluate(value);
+				if (value)
+					output += "true";
+				else
+					output += "false";
+				break;
+			}
+			case Expression::Type::PARENTHESIS:
+			case Expression::Type::BINARYOPERATION:
+			case Expression::Type::VARIABLE:
+				break;
 		}
-		case Expression::Type::INTEGER:
-		{
-			int value = 0;
-			expression->evaluate(value);
-			output = std::to_string(value);
-			break;
-		}
-		case Expression::Type::FLOAT:
-		{
-			float value = 0.0;
-			expression->evaluate(value);
-			output = std::to_string(value);
-			break;
-		}
-		case Expression::Type::BOOLEAN:
-		{
-			bool value = false;
-			expression->evaluate(value);
-			if (value)
-				output = "true";
-			else
-				output = "false";
-			break;
-		}
-		case Expression::Type::PARENTHESIS:
-		case Expression::Type::BINARYOPERATION:
-		case Expression::Type::VARIABLE:
-			break;
+
+		output += '\t';
 	}
 
 	std::cout << output << '\n';

@@ -236,11 +236,11 @@ public:
 class PrintNode : public Statement
 {
 private:
-	Expression* expression;
+	std::vector<Expression*>  expressions;
 
 public:
 	PrintNode();
-	PrintNode(Expression* expression);
+	PrintNode(std::vector<Expression*> expression);
 	~PrintNode();
 
 	Expression* execute();
