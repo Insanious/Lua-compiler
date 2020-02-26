@@ -163,6 +163,7 @@ ioread : IO_READ LROUND exp RROUND				{ log_grammar("ioread:IO_READ (exp)");		$$
 assignment : VAR ASSIGNMENT exp						{ log_grammar("assignment:VAR = exp");			$$ = new AssignmentNode(environment, new VariableNode(environment, $1), $3); }
  		   | VAR ASSIGNMENT ioread					{ log_grammar("assignment:VAR = ioread");		$$ = new AssignmentNode(environment, new VariableNode(environment, $1), $3); }
 		   | VAR ASSIGNMENT LCURLY explist RCURLY	{ log_grammar("assignment:VAR = { explist }");	$$ = new AssignmentNode(environment, new VariableNode(environment, $1), new ListNode($4)); }
+		   | explist ASSIGNMENT explist				{ log_grammar("assignment:explist = explist");	$$ = new AssignmentNode(environment, $1, $3);}
 
 for : FOR VAR ASSIGNMENT explist DO block	{ log_grammar("for:FOR VAR ASSIGNMENT exp COMMA exp"); $$ = new ForNode(new VariableNode(environment, $1), $4, $6); }
 
@@ -185,6 +186,8 @@ exp : op									{ log_grammar("exp:op"); $$ = $1; }
 op : op_1									{ log_grammar("op:op_1");		$$ = $1; }
    | op EQUALS op_1							{ log_grammar("op:op == op_1");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::EQUALS); }
    | op NOT_EQUALS op_1						{ log_grammar("op:op != op_1");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::NOT_EQUALS); }
+   | op LESS op_1							{ log_grammar("op:op != op_1");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::LESS); }
+   | op MORE op_1							{ log_grammar("op:op != op_1");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::MORE); }
 
 op_1 : op_2									{ log_grammar("op_1:op_2");			$$ = $1; }
 	 | op_1 PLUS op_2						{ log_grammar("op_1:op_1 + op_2");	$$ = new BinaryOperationNode($1, $3, BinaryOperationNode::Operation::PLUS); }
@@ -206,3 +209,4 @@ op_last : TRUE								{ log_grammar("op_last:TRUE"); 				$$ = new BooleanNode(tr
 		| VAR								{ log_grammar("op_last:VAR"); 				$$ = new VariableNode(environment, $1); }
 		| VAR LSQUARE exp RSQUARE			{ log_grammar("op_last:[exp]"); 			$$ = new VariableNode(environment, $1, $3); }
 		| LROUND exp RROUND					{ log_grammar("op_last:(exp)"); 			$$ = new ParenthesisNode($2); }
+		| HASHTAG VAR 						{ log_grammar("op_last:VAR HASHTAG");		$$ = new LengthNode(new VariableNode(environment, $2)); }

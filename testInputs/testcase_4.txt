@@ -1,0 +1,11 @@
+n = io.read("*number")
+for i = 2,n
+do
+  if n%i==0 then
+    io.write(i)
+    io.write(" is a factor of ")
+    x = n
+  end
+end
+
+print("success")

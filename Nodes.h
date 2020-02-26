@@ -29,7 +29,7 @@ public:
 class Expression : public Node
 {
 public:
-	enum Type { VARIABLE, STRING, INTEGER, FLOAT, BOOLEAN, PARENTHESIS, BINARYOPERATION, IO_READ, LIST } type;
+	enum Type { VARIABLE, STRING, INTEGER, FLOAT, BOOLEAN, PARENTHESIS, BINARYOPERATION, IO_READ, LIST, LENGTH } type;
 
 	bool isExecutable;
 
@@ -83,6 +83,7 @@ private:
 public:
 	AssignmentNode();
 	AssignmentNode(Environment* environment, Expression* left, Expression* right);
+	AssignmentNode(Environment* environment, std::vector<Expression*> left, std::vector<Expression*> right);
 	~AssignmentNode();
 
 	void evaluate();
@@ -129,6 +130,20 @@ public:
 };
 
 
+class LengthNode : public Expression
+{
+private:
+	Expression* variable;
+
+public:
+	LengthNode();
+	LengthNode(Expression* variable);
+	~LengthNode();
+
+	Expression* execute();
+};
+
+
 class IntegerNode : public Expression
 {
 private:
@@ -147,7 +162,6 @@ public:
 	~IntegerNode();
 
 	void evaluate(int& returnValue);
-	Expression* right;
 };
 
 
@@ -213,7 +227,7 @@ private:
 	Expression* right;
 
 public:
-	enum Operation { EQUALS, NOT_EQUALS, PLUS, MINUS, MULTIPLICATION, DIVISION, MODULUS, POWER_OF } operation;
+	enum Operation { EQUALS, NOT_EQUALS, PLUS, MINUS, MULTIPLICATION, DIVISION, MODULUS, POWER_OF, LESS, MORE } operation;
 
 	BinaryOperationNode();
 	BinaryOperationNode(Expression* left, Expression* right, BinaryOperationNode::Operation operation);

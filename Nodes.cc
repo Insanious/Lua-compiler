@@ -238,6 +238,19 @@ AssignmentNode::AssignmentNode(Environment* environment, Expression* left, Expre
 	this->right = right;
 }
 
+AssignmentNode::AssignmentNode(Environment* environment, std::vector<Expression*> left, std::vector<Expression*> right) : Statement("AssignmentNode", "")
+{
+	log_calls("NOT IMPLEMENTED: AssignmentNode::AssignmentNode(Environment* environment, std::vector<Expression*> left, std::vector<Expression*> right)");
+
+	for(auto expression : left)
+		this->children.push_back(expression);
+
+	for(auto expression : right)
+		this->children.push_back(expression);
+
+	this->environment = environment;
+}
+
 AssignmentNode::~AssignmentNode() {}
 
 void AssignmentNode::evaluate()
@@ -249,6 +262,12 @@ Expression* AssignmentNode::execute()
 {
 	log_calls("Expression* AssignmentNode::execute()");
 
+	if (!right || !left)
+	{
+		std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), explist = explist\n";
+		return nullptr;
+	}
+
 	if (right->type == Expression::Type::IO_READ)
 	{
 		std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), var = IO_READ\n";
@@ -256,6 +275,12 @@ Expression* AssignmentNode::execute()
 	}
 
 	if (right->type == Expression::Type::LIST)
+	{
+		std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), var = LIST\n";
+		return nullptr;
+	}
+
+	if (right->type == Expression::Type::LENGTH)
 	{
 		std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), var = LIST\n";
 		return nullptr;
@@ -357,6 +382,9 @@ Expression* AssignmentNode::execute()
 			break;
 		case Expression::Type::LIST:
 			std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), LIST\n";
+			break;
+		case Expression::Type::LENGTH:
+			std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), LENGTH\n";
 			break;
 		case Expression::Type::PARENTHESIS:
 		case Expression::Type::BINARYOPERATION:
@@ -518,6 +546,28 @@ bool VariableNode::sameType(Expression* other)
 	log_calls("bool VariableNode::sameType(Expression* other)");
 
 	return this->environment->read(this)->type == other->type;
+}
+
+
+
+LengthNode::LengthNode() {}
+
+LengthNode::LengthNode(Expression* variable) : Expression(Expression::Type::LENGTH, true, "LengthNode", "")
+{
+	log_calls("LengthNode::LengthNode(Expression* variable)");
+
+	this->children.push_back(variable);
+
+	this->variable = variable;
+}
+
+LengthNode::~LengthNode() {}
+
+Expression* LengthNode::execute()
+{
+	log_calls("NOT IMPLEMENTED: Expression* LengthNode::execute()");
+
+	return nullptr;
 }
 
 
@@ -1205,6 +1255,12 @@ BinaryOperationNode::BinaryOperationNode(Expression* left, Expression* right, Bi
 		case BinaryOperationNode::Operation::MODULUS:
 			this->value = "'%'";
 			break;
+		case BinaryOperationNode::Operation::LESS:
+			this->value = "'<'";
+			break;
+		case BinaryOperationNode::Operation::MORE:
+			this->value = "'>'";
+			break;
 	}
 }
 
@@ -1238,6 +1294,14 @@ Expression* BinaryOperationNode::execute()
 		case BinaryOperationNode::Operation::MODULUS:
 			std::cout << "NOT IMPLEMENTED: Expression* BinaryOperationNode::execute() case MODULUS";
 			//return *left % right;
+			return nullptr;
+		case BinaryOperationNode::Operation::LESS:
+			std::cout << "NOT IMPLEMENTED: Expression* BinaryOperationNode::execute() case LESS";
+			//return *left < right;
+			return nullptr;
+		case BinaryOperationNode::Operation::MORE:
+			std::cout << "NOT IMPLEMENTED: Expression* BinaryOperationNode::execute() case MORE";
+			//return *left > right;
 			return nullptr;
 	}
 
@@ -1469,6 +1533,9 @@ Expression* PrintNode::execute()
 				break;
 			case Expression::Type::LIST:
 				std::cout << "NOT IMPLEMENTED: Expression* PrintNode::execute(), LIST\n";
+				break;
+			case Expression::Type::LENGTH:
+				std::cout << "NOT IMPLEMENTED: Expression* PrintNode::execute(), LENGTH\n";
 				break;
 			case Expression::Type::PARENTHESIS:
 			case Expression::Type::BINARYOPERATION:
