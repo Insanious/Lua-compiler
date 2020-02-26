@@ -29,7 +29,7 @@ public:
 class Expression : public Node
 {
 public:
-	enum Type { VARIABLE, STRING, INTEGER, FLOAT, BOOLEAN, PARENTHESIS, BINARYOPERATION, IO_READ } type;
+	enum Type { VARIABLE, STRING, INTEGER, FLOAT, BOOLEAN, PARENTHESIS, BINARYOPERATION, IO_READ, LIST } type;
 
 	bool isExecutable;
 
@@ -90,6 +90,19 @@ public:
 };
 
 
+class ListNode : public Expression
+{
+private:
+	std::vector<Expression*> expressions;
+
+public:
+	ListNode();
+	ListNode(std::vector<Expression*> expressions);
+	Expression* operator [] (int index);
+	~ListNode();
+};
+
+
 class VariableNode : public Expression
 {
 private:
@@ -99,6 +112,7 @@ private:
 public:
 	VariableNode();
 	VariableNode(Environment* environment, std::string name);
+	VariableNode(Environment* environment, std::string name, Expression* index);
 	Expression* operator == (Expression* obj);
 	Expression* operator != (Expression* obj);
 	Expression* operator + (Expression* obj);
@@ -289,6 +303,21 @@ public:
 	PrintNode();
 	PrintNode(std::vector<Expression*> expression);
 	~PrintNode();
+
+	Expression* execute();
+};
+
+
+class RepeatStatementNode : public Statement
+{
+private:
+	Statement* block;
+	Expression* until;
+
+public:
+	RepeatStatementNode();
+	RepeatStatementNode(Statement* block, Expression* until);
+	~RepeatStatementNode();
 
 	Expression* execute();
 };

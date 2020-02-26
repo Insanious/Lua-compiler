@@ -24,6 +24,8 @@ void Environment::write(Expression* variable, Expression* expression)
 	std::string name = "";
 	variable->evaluate(name);
 
+
+
 	/*if (exists(variable))
 	{
 		if (variables[name]->type != expression->type)

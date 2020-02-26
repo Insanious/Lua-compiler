@@ -110,6 +110,7 @@
 %type <std::vector<Statement*>> stmts
 %type <Statement*> stmt
 %type <Statement*> laststmt
+%type <Statement*> repeatuntil
 %type <Statement*> for
 %type <Statement*> assignment
 %type <Statement*> if
@@ -119,7 +120,6 @@
 
 %type <Expression*> ioread
 %type <std::vector<Expression*>> explist
-%type <Expression*> var
 %type <Expression*> exp
 %type <Expression*> op
 %type <Expression*> op_1
@@ -145,23 +145,26 @@ stmts : stmt								{ log_grammar("stmts:stmt"); 				$$.push_back($1); }
 	  | stmts stmt							{ log_grammar("stmts:stmts stmt optsemi"); 	$$ = $1; $$.push_back($2); }
 	  | stmts SEMICOLON stmt				{ log_grammar("stmts:stmts stmt optsemi"); 	$$ = $1; $$.push_back($3); }
 
-stmt : if elseifs else END					{ log_grammar("stmt:ifstatement END");				$2.insert($2.begin(), $1); if ($3) $2.push_back($3); $$ = new IfStatementNode($2); }
-	 | assignment							{ log_grammar("stmt:assignment");					$$ = $1; }
-	 | PRINT explist						{ log_grammar("stmt:PRINT explist"); 				$$ = new PrintNode($2); }
-	 | PRINT LROUND explist RROUND			{ log_grammar("stmt:PRINT LROUND explist RROUND");	$$ = new PrintNode($3); }
+stmt : if elseifs else END					{ log_grammar("stmt:ifstatement END");					$2.insert($2.begin(), $1); if ($3) $2.push_back($3); $$ = new IfStatementNode($2); }
+	 | assignment							{ log_grammar("stmt:assignment");						$$ = $1; }
+	 | PRINT explist						{ log_grammar("stmt:PRINT explist"); 					$$ = new PrintNode($2); }
+	 | PRINT LROUND explist RROUND			{ log_grammar("stmt:PRINT LROUND explist RROUND");		$$ = new PrintNode($3); }
 	 | for END								{ log_grammar("stmt:for END"); 							$$ = $1; }
-	 //| ioread								{ log_grammar("stmt:IO_READ LROUND var RROUND");	$$ = $1; }
-	 | IO_WRITE LROUND explist RROUND		{ log_grammar("stmt:IO_WRITE LROUND var RROUND");	$$ = new IOWriteNode($3); }
+	 | IO_WRITE LROUND explist RROUND		{ log_grammar("stmt:IO_WRITE LROUND explist RROUND");	$$ = new IOWriteNode($3); }
+	 | repeatuntil							{ log_grammar("stmt:repeatuntil"); 						$$ = $1; }
+
+repeatuntil : REPEAT block UNTIL exp		{ log_grammar("repeatuntil:REPEAT block UNTIL exp"); $$ = new RepeatStatementNode($2, $4); }
 
 ioread : IO_READ LROUND exp RROUND				{ log_grammar("ioread:IO_READ (exp)");		$$ = new IOReadNode($3); }
  	   | IO_READ LROUND IO_READ_NUMBER RROUND	{ log_grammar("ioread:IO_READ (*number)");	$$ = new IOReadNode($3); }
  	   | IO_READ LROUND IO_READ_LINE RROUND		{ log_grammar("ioread:IO_READ (*line)");	$$ = new IOReadNode($3); }
 	   | IO_READ LROUND IO_READ_ALL RROUND		{ log_grammar("ioread:IO_READ (*all)");		$$ = new IOReadNode($3); }
 
-assignment : VAR ASSIGNMENT exp				{ log_grammar("assignment:VAR ASSIGNMENT exp"); $$ = new AssignmentNode(environment, new VariableNode(environment, $1), $3); }
- 		   | VAR ASSIGNMENT ioread						{ log_grammar("assignment:VAR ioread"); $$ = new AssignmentNode(environment, new VariableNode(environment, $1), $3); }
+assignment : VAR ASSIGNMENT exp						{ log_grammar("assignment:VAR = exp");			$$ = new AssignmentNode(environment, new VariableNode(environment, $1), $3); }
+ 		   | VAR ASSIGNMENT ioread					{ log_grammar("assignment:VAR = ioread");		$$ = new AssignmentNode(environment, new VariableNode(environment, $1), $3); }
+		   | VAR ASSIGNMENT LCURLY explist RCURLY	{ log_grammar("assignment:VAR = { explist }");	$$ = new AssignmentNode(environment, new VariableNode(environment, $1), new ListNode($4)); }
 
-for : FOR var ASSIGNMENT explist DO block	{ log_grammar("for:FOR var ASSIGNMENT exp COMMA exp"); $$ = new ForNode($2, $4, $6); }
+for : FOR VAR ASSIGNMENT explist DO block	{ log_grammar("for:FOR VAR ASSIGNMENT exp COMMA exp"); $$ = new ForNode(new VariableNode(environment, $1), $4, $6); }
 
 if : IF exp THEN block						{ log_grammar("if:IF exp THEN block"); $$ = new IfNode($2, $4); }
 
@@ -176,8 +179,6 @@ else : /* empty */							{ log_grammar("else:empty"); }
 //
 explist : exp 								{ log_grammar("explist:exp");			$$.push_back($1); }
 		| explist COMMA exp					{ log_grammar("explist:explist exp");	$$ = $1; $$.push_back($3); }
-
-var : VAR 									{ log_grammar("var:VAR"); $$ = new VariableNode(environment, $1); }
 
 exp : op									{ log_grammar("exp:op"); $$ = $1; }
 
@@ -203,4 +204,5 @@ op_last : TRUE								{ log_grammar("op_last:TRUE"); 				$$ = new BooleanNode(tr
 		| INTEGER							{ log_grammar("op_last:INTEGER"); 			$$ = new IntegerNode($1); }
 		| STRING							{ log_grammar("op_last:STRING"); 			$$ = new StringNode($1); }
 		| VAR								{ log_grammar("op_last:VAR"); 				$$ = new VariableNode(environment, $1); }
-		| LROUND exp RROUND					{ log_grammar("op_last:LROUND exp RROUND"); $$ = new ParenthesisNode($2); }
+		| VAR LSQUARE exp RSQUARE			{ log_grammar("op_last:[exp]"); 			$$ = new VariableNode(environment, $1, $3); }
+		| LROUND exp RROUND					{ log_grammar("op_last:(exp)"); 			$$ = new ParenthesisNode($2); }

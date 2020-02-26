@@ -249,16 +249,24 @@ Expression* AssignmentNode::execute()
 {
 	log_calls("Expression* AssignmentNode::execute()");
 
-	if (right->type == Expression::Type::IO_READ) // SUPER EARLY RETURN
+	if (right->type == Expression::Type::IO_READ)
 	{
-		std::cout << "SYNTAX ERROR: non-VARIABLE assignment\n";
+		std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), var = IO_READ\n";
 		return nullptr;
 	}
+
+	if (right->type == Expression::Type::LIST)
+	{
+		std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), var = LIST\n";
+		return nullptr;
+	}
+
+	Expression* rightExpression = right;
 
 	if (left->isExecutable)
 		left = left->execute();
 	if (right->isExecutable)
-		right = right->execute();
+		rightExpression = right->execute();
 
 	if (left->type != Expression::Type::VARIABLE) // Can't assign a non-variable
 	{
@@ -266,7 +274,7 @@ Expression* AssignmentNode::execute()
 		return nullptr;
 	}
 
-	Expression* rightExpression = right;
+
 
 	if (right->type == Expression::Type::VARIABLE)
 	{
@@ -296,7 +304,6 @@ Expression* AssignmentNode::execute()
 			}
 		}
 	}
-
 
 	environment->write(left, rightExpression);
 
@@ -345,13 +352,41 @@ Expression* AssignmentNode::execute()
 				output = leftName + " = false";
 			break;
 		}
+		case Expression::Type::IO_READ:
+			std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), IO_READ\n";
+			break;
+		case Expression::Type::LIST:
+			std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), LIST\n";
+			break;
 		case Expression::Type::PARENTHESIS:
 		case Expression::Type::BINARYOPERATION:
-		case Expression::Type::IO_READ:
 			break;
 	}
 
 	log_assignments(output);
+
+	return nullptr;
+}
+
+
+
+ListNode::ListNode() {}
+
+ListNode::ListNode(std::vector<Expression*> expressions) : Expression(Expression::Type::LIST, false, "ListNode", "")
+{
+	log_calls("ListNode::ListNode(std::vector<Expression*> expressions)");
+
+	for(auto expression : expressions)
+		this->children.push_back(expression);
+
+	this->expressions = expressions;
+}
+
+ListNode::~ListNode() {}
+
+Expression* ListNode::operator [] (int index)
+{
+	log_calls("NOT IMPLEMENTED: Expression* ListNode::operator [] (int index)");
 
 	return nullptr;
 }
@@ -363,6 +398,17 @@ VariableNode::VariableNode() {}
 VariableNode::VariableNode(Environment* environment, std::string name) : Expression(Expression::Type::VARIABLE, false, "VariableNode", name)
 {
 	log_calls("VariableNode::VariableNode(Environment* environment, std::string name)");
+
+	this->environment = environment;
+	this->name = name;
+}
+
+VariableNode::VariableNode(Environment* environment, std::string name, Expression* index) : Expression(Expression::Type::VARIABLE, false, "VariableNode", name)
+{
+	log_calls("NOT IMPLEMENTED: VariableNode::VariableNode(Environment* environment, std::string name, Expression* index)");
+	// isExecutable = true, to calculate the actual expression[index]
+
+	this->children.push_back(index);
 
 	this->environment = environment;
 	this->name = name;
@@ -1190,6 +1236,7 @@ Expression* BinaryOperationNode::execute()
 		case BinaryOperationNode::Operation::POWER_OF:
 			return *left ^ right;
 		case BinaryOperationNode::Operation::MODULUS:
+			std::cout << "NOT IMPLEMENTED: Expression* BinaryOperationNode::execute() case MODULUS";
 			//return *left % right;
 			return nullptr;
 	}
@@ -1281,6 +1328,8 @@ IOReadNode::IOReadNode() {}
 
 IOReadNode::IOReadNode(Expression* variable) : Expression(Expression::Type::IO_READ, true, "IOReadNode", "")
 {
+	log_calls("NOT IMPLEMENTED: IOReadNode::IOReadNode(Expression* variable)");
+
 	this->children.push_back(variable);
 
 	this->variable = variable;
@@ -1288,6 +1337,8 @@ IOReadNode::IOReadNode(Expression* variable) : Expression(Expression::Type::IO_R
 
 IOReadNode::IOReadNode(std::string type) : Expression(Expression::Type::IO_READ, true, "IOReadNode", "")
 {
+	log_calls("NOT IMPLEMENTED: IOReadNode::IOReadNode(std::string type)");
+
 	if (type == "*number")
 		this->children.push_back(new StringNode("number"));
 
@@ -1298,7 +1349,7 @@ IOReadNode::~IOReadNode() {}
 
 Expression* IOReadNode::execute()
 {
-	log_calls("Expression* IOWriteNode::execute()");
+	log_calls("NOT IMPLEMENTED: Expression* IOReadNode::execute()");
 
 	return nullptr;
 }
@@ -1309,6 +1360,8 @@ IOWriteNode::IOWriteNode() {}
 
 IOWriteNode::IOWriteNode(std::vector<Expression*> expressions) : Statement("IOWriteNode", "")
 {
+	log_calls("NOT IMPLEMENTED: IOWriteNode::IOWriteNode(std::vector<Expression*> expressions)");
+
 	for(auto expression : expressions)
 		this->children.push_back(expression);
 
@@ -1319,7 +1372,7 @@ IOWriteNode::~IOWriteNode() {}
 
 Expression* IOWriteNode::execute()
 {
-	log_calls("Expression* IOWriteNode::execute()");
+	log_calls("NOT IMPLEMENTED: Expression* IOWriteNode::execute()");
 
 	return nullptr;
 }
@@ -1411,9 +1464,14 @@ Expression* PrintNode::execute()
 					output += "false";
 				break;
 			}
+			case Expression::Type::IO_READ:
+				std::cout << "NOT IMPLEMENTED: Expression* PrintNode::execute(), IO_READ\n";
+				break;
+			case Expression::Type::LIST:
+				std::cout << "NOT IMPLEMENTED: Expression* PrintNode::execute(), LIST\n";
+				break;
 			case Expression::Type::PARENTHESIS:
 			case Expression::Type::BINARYOPERATION:
-			case Expression::Type::IO_READ:
 			case Expression::Type::VARIABLE:
 				break;
 		}
@@ -1424,6 +1482,45 @@ Expression* PrintNode::execute()
 	std::cout << output << '\n';
 
 	return nullptr;
+}
+
+
+
+RepeatStatementNode::RepeatStatementNode() {}
+
+RepeatStatementNode::RepeatStatementNode(Statement* block, Expression* until) : Statement("RepeatStatementNode", "")
+{
+	log_calls("NOT IMPLEMENTED: RepeatStatementNode::RepeatStatementNode(Statement* block, Expression* until)");
+
+	this->children.push_back(block);
+	this->children.push_back(until);
+
+	this->block = block;
+	this->until = until;
+}
+
+RepeatStatementNode::~RepeatStatementNode() {}
+
+Expression* RepeatStatementNode::execute()
+{
+	log_calls("NOT IMPLEMENTED: Expressions* RepeatStatementNode::execute()");
+
+	bool value = false;
+	Expression* res = nullptr;
+
+	while (!value)
+	{
+		res = block->execute();
+
+		Expression* currentUntil = nullptr;
+		if (until->isExecutable)
+			currentUntil = until->execute();
+
+
+		currentUntil->evaluate(value);
+	}
+
+	return res;
 }
 
 
