@@ -74,7 +74,7 @@ nil						{ log_lexer(yytext); return yy::parser::make_NIL(yytext); }
 false					{ log_lexer(yytext); return yy::parser::make_FALSE(yytext); }
 true					{ log_lexer(yytext); return yy::parser::make_TRUE(yytext); }
 [0-9]+\.[0-9]+	 		{ log_lexer(yytext); return yy::parser::make_FLOAT(std::stof(yytext)); }
-\-[0-9]+				{ log_lexer(yytext); return yy::parser::make_INTEGER(std::stoi(yytext)); }
+ /*\-[0-9]+				{ log_lexer(yytext); return yy::parser::make_INTEGER(std::stoi(yytext)); }*/
 [0-9]+					{ log_lexer(yytext); return yy::parser::make_INTEGER(std::stoi(yytext)); }
 
 \"[^\*\"]*\"			{ log_lexer(yytext); std::string str = yytext; return yy::parser::make_STRING(str.substr(1, yyleng - 2)); }
@@ -94,9 +94,9 @@ true					{ log_lexer(yytext); return yy::parser::make_TRUE(yytext); }
 \}						{ log_lexer(yytext); return yy::parser::make_RCURLY(yytext); }
 
  /* Whitespace */
-" "+					{ log_lexer("( )+"); /*return yy::parser::make_WHITESPACE(yytext);*/ }
-\t+						{ log_lexer("(\\t)+"); /*return yy::parser::make_WHITESPACE(yytext);*/ }
-\n+						{ log_lexer("(\\n)+"); /*return yy::parser::make_NEWLINE(yytext);*/ }
+" "+					{ log_lexer("\" \"+"); /*return yy::parser::make_WHITESPACE(yytext);*/ }
+\t+						{ log_lexer("\"\\t\"+"); /*return yy::parser::make_WHITESPACE(yytext);*/ }
+\n+						{ log_lexer("\"\\n\"+"); /*return yy::parser::make_NEWLINE(yytext);*/ }
 
  /* Misc */
 <<EOF>>					{ return yy::parser::make_EXIT(); }

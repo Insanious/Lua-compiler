@@ -274,6 +274,12 @@ Expression* AssignmentNode::execute()
 		return nullptr;
 	}
 
+	if (right->type == Expression::Type::FUNCTIONCALL)
+	{
+		std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), var = FUNCTIONCALL\n";
+		return nullptr;
+	}
+
 	if (right->type == Expression::Type::LIST)
 	{
 		std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), var = LIST\n";
@@ -282,7 +288,7 @@ Expression* AssignmentNode::execute()
 
 	if (right->type == Expression::Type::LENGTH)
 	{
-		std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), var = LIST\n";
+		std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), var = LENGTH\n";
 		return nullptr;
 	}
 
@@ -299,7 +305,11 @@ Expression* AssignmentNode::execute()
 		return nullptr;
 	}
 
-
+	if (!right || !rightExpression)
+	{
+		log_calls("SYNTAX ERROR: right expression doesn't exist\n");
+		return nullptr;
+	}
 
 	if (right->type == Expression::Type::VARIABLE)
 	{
@@ -379,6 +389,9 @@ Expression* AssignmentNode::execute()
 		}
 		case Expression::Type::IO_READ:
 			std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), IO_READ\n";
+			break;
+		case Expression::Type::FUNCTIONCALL:
+			std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), FUNCTIONCALL\n";
 			break;
 		case Expression::Type::LIST:
 			std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), LIST\n";
@@ -1269,39 +1282,53 @@ BinaryOperationNode::~BinaryOperationNode() {}
 Expression* BinaryOperationNode::execute()
 {
 	log_calls("Expression* BinaryOperationNode::execute()");
+	Expression* leftExpression = left;
+	Expression* rightExpression = right;
 
 	if (left->isExecutable)
-		left = left->execute();
+		leftExpression = left->execute();
 	if (right->isExecutable)
-		right = right->execute();
+		rightExpression = right->execute();
+
+	if (left->type == Expression::Type::VARIABLE)
+		left->evaluate(leftExpression);
+
+	if (right->type == Expression::Type::VARIABLE)
+		right->evaluate(rightExpression);
+
+	if (!leftExpression || !rightExpression)
+	{
+		log_calls("SYNTAX ERROR: left or right doesn't exist in binary operation\n");
+		return nullptr;
+	}
 
 	switch(this->operation)
 	{
 		case BinaryOperationNode::Operation::EQUALS:
-			return *left == right;
+			return *leftExpression == rightExpression;
 		case BinaryOperationNode::Operation::NOT_EQUALS:
-			return *left != right;
+			return *leftExpression != rightExpression;
 		case BinaryOperationNode::Operation::PLUS:
-			return *left + right;
+			return *leftExpression + rightExpression;
 		case BinaryOperationNode::Operation::MINUS:
-			return *left - right;
+			return *leftExpression - rightExpression;
 		case BinaryOperationNode::Operation::MULTIPLICATION:
-			return *left * right;
+			return *leftExpression * rightExpression;
 		case BinaryOperationNode::Operation::DIVISION:
-			return *left / right;
+			return *leftExpression / rightExpression;
 		case BinaryOperationNode::Operation::POWER_OF:
-			return *left ^ right;
+			return *leftExpression ^ rightExpression;
 		case BinaryOperationNode::Operation::MODULUS:
 			std::cout << "NOT IMPLEMENTED: Expression* BinaryOperationNode::execute() case MODULUS";
-			//return *left % right;
+			//return *leftExpression % rightExpression;
 			return nullptr;
 		case BinaryOperationNode::Operation::LESS:
 			std::cout << "NOT IMPLEMENTED: Expression* BinaryOperationNode::execute() case LESS";
-			//return *left < right;
+			//return *leftExpression < rightExpression;
 			return nullptr;
 		case BinaryOperationNode::Operation::MORE:
 			std::cout << "NOT IMPLEMENTED: Expression* BinaryOperationNode::execute() case MORE";
-			//return *left > right;
+			//return *leftExpression > rightExpression;
 			return nullptr;
 	}
 
@@ -1464,7 +1491,7 @@ ForNode::ForNode(Expression* variable, std::vector<Expression*> explist, Stateme
 
 Expression* ForNode::execute()
 {
-	log_calls("Expression* ForNode::execute()");
+	log_calls("NOT IMPLEMENTED: Expression* ForNode::execute()");
 
 	return nullptr;
 }
@@ -1531,6 +1558,9 @@ Expression* PrintNode::execute()
 			case Expression::Type::IO_READ:
 				std::cout << "NOT IMPLEMENTED: Expression* PrintNode::execute(), IO_READ\n";
 				break;
+			case Expression::Type::FUNCTIONCALL:
+				std::cout << "NOT IMPLEMENTED: Expression* PrintNode::execute(), FUNCTIONCALL\n";
+				break;
 			case Expression::Type::LIST:
 				std::cout << "NOT IMPLEMENTED: Expression* PrintNode::execute(), LIST\n";
 				break;
@@ -1588,6 +1618,67 @@ Expression* RepeatStatementNode::execute()
 	}
 
 	return res;
+}
+
+
+
+FunctionCallNode::FunctionCallNode(Expression* variable, std::vector<Expression*> arguments) : Expression(Expression::Type::FUNCTIONCALL, true, "FunctionCallNode", "")
+{
+	log_calls("FunctionCallNode::~FunctionCallNode(std::vector<Expression*> arguments)");
+
+	Expression* expr = this;
+	expr->children.push_back(variable);
+
+	for(auto argument : arguments)
+		expr->children.push_back(argument);
+
+	this->variable = variable;
+	this->arguments = arguments;
+}
+
+Expression* FunctionCallNode::execute()
+{
+	log_calls("NOT IMPLEMENTED: Expression* FunctionCallNode::execute()");
+
+	return nullptr;
+}
+
+
+
+FunctionNode::FunctionNode() : Statement("FunctionNode", "") {}
+
+FunctionNode::FunctionNode(Expression* variable, Statement* block) : Statement("FunctionNode", "")
+{
+	log_calls("FunctionNode::FunctionNode(Expression* variable, Statement* block)");
+
+	this->children.push_back(variable);
+	this->children.push_back(block);
+
+	this->variable = variable;
+	this->block = block;
+}
+
+FunctionNode::FunctionNode(Expression* variable, Statement* block, std::vector<Expression*> arguments) : Statement("FunctionNode", "")
+{
+	log_calls("FunctionNode::~FunctionNode(Expression* variable, Statement* block, std::vector<Expression*> arguments)");
+
+	this->children.push_back(variable);
+	this->children.push_back(block);
+	for(auto argument : arguments)
+		this->children.push_back(argument);
+
+	this->variable = variable;
+	this->block = block;
+	this->arguments = arguments;
+}
+
+FunctionNode::~FunctionNode() {}
+
+Expression* FunctionNode::execute()
+{
+	log_calls("NOT IMPLEMENTED: Expression* FunctionNodn::execute()");
+
+	return nullptr;
 }
 
 
@@ -1717,14 +1808,19 @@ Expression* LastStatement::execute()
 
 
 
-ReturnNode::ReturnNode() : Statement("ReturnNode", "") {}
+ReturnNode::ReturnNode() : Statement("ReturnNode", "")
+{
+	log_calls("ReturnNode::ReturnNode()");
+}
 
-ReturnNode::ReturnNode(Expression* expression) : Statement("ReturnNode", "")
+ReturnNode::ReturnNode(std::vector<Expression*> expressions) : Statement("ReturnNode", "")
 {
 	log_calls("ReturnNode::ReturnNode(Expression* expression)");
 
-	this->children.push_back(expression);
-	this->expression = expression;
+	for(auto expression : expressions)
+		this->children.push_back(expression);
+
+	this->expressions = expressions;
 }
 
 ReturnNode::~ReturnNode() {}

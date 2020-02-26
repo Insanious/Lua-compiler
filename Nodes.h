@@ -29,7 +29,7 @@ public:
 class Expression : public Node
 {
 public:
-	enum Type { VARIABLE, STRING, INTEGER, FLOAT, BOOLEAN, PARENTHESIS, BINARYOPERATION, IO_READ, LIST, LENGTH } type;
+	enum Type { VARIABLE, STRING, INTEGER, FLOAT, BOOLEAN, PARENTHESIS, BINARYOPERATION, IO_READ, LIST, LENGTH, FUNCTIONCALL } type;
 
 	bool isExecutable;
 
@@ -337,6 +337,39 @@ public:
 };
 
 
+class FunctionCallNode : public Expression, public Statement
+{
+private:
+	Expression* variable;
+	std::vector<Expression*> arguments;
+
+public:
+	FunctionCallNode();
+	FunctionCallNode(Expression* variable, std::vector<Expression*> arguments);
+	~FunctionCallNode();
+
+	Expression* execute();
+};
+
+
+class FunctionNode : public Statement
+{
+private:
+	Expression* variable;
+	Statement* block;
+	std::vector<Expression*> arguments;
+
+public:
+	FunctionNode();
+	FunctionNode(std::vector<Expression*> arguments);
+	FunctionNode(Expression* variable, Statement* block);
+	FunctionNode(Expression* variable, Statement* block, std::vector<Expression*> arguments);
+	~FunctionNode();
+
+	Expression* execute();
+};
+
+
 class IfStatementNode : public Statement
 {
 private:
@@ -400,11 +433,11 @@ public:
 class ReturnNode : public Statement
 {
 private:
-	Expression* expression;
+	std::vector<Expression*> expressions;
 
 public:
 	ReturnNode();
-	ReturnNode(Expression* expression);
+	ReturnNode(std::vector<Expression*> expressions);
 	~ReturnNode();
 
 	void evaluate();

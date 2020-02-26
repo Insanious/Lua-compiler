@@ -31,3 +31,11 @@ check_output $output $file
 file="testInputs/varTest.txt"
 output=$(cat testInputs/varTest.txt | ./parser nodebug)
 check_output $output $file
+
+
+cat testInputs/testcase_1.txt | ./parser nodebug
+cat testInputs/testcase_2.txt | ./parser nodebug
+cat testInputs/testcase_3.txt | ./parser nodebug
+cat testInputs/testcase_4.txt | ./parser nodebug
+cat testInputs/testcase_5.txt | ./parser nodebug
+cat testInputs/testcase_6.txt | ./parser nodebug
