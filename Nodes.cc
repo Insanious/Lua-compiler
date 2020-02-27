@@ -268,11 +268,11 @@ Expression* AssignmentNode::execute()
 		return nullptr;
 	}
 
-	if (right->type == Expression::Type::IO_READ)
+	/*if (right->type == Expression::Type::IO_READ)
 	{
 		std::cout << "NOT IMPLEMENTED: Expression* AssignmentNode::execute(), var = IO_READ\n";
 		return nullptr;
-	}
+	}*/
 
 	if (right->type == Expression::Type::FUNCTIONCALL)
 	{
@@ -1417,23 +1417,37 @@ Expression* ParenthesisNode::execute()
 
 IOReadNode::IOReadNode() {}
 
-IOReadNode::IOReadNode(Expression* variable) : Expression(Expression::Type::IO_READ, true, "IOReadNode", "")
+IOReadNode::IOReadNode(Expression* nrOfCharacters) : Expression(Expression::Type::IO_READ, true, "IOReadNode", "")
 {
-	log_calls("NOT IMPLEMENTED: IOReadNode::IOReadNode(Expression* variable)");
+	log_calls("IOReadNode::IOReadNode(Expression* nrOfCharacters)");
 
-	this->children.push_back(variable);
+	this->children.push_back(nrOfCharacters);
 
-	this->variable = variable;
+	this->nrOfCharacters = nrOfCharacters;
+	this->type = IOReadNode::Type::VARIABLE;
 }
 
-IOReadNode::IOReadNode(std::string type) : Expression(Expression::Type::IO_READ, true, "IOReadNode", "")
+IOReadNode::IOReadNode(IOReadNode::Type type) : Expression(Expression::Type::IO_READ, true, "IOReadNode", "")
 {
-	log_calls("NOT IMPLEMENTED: IOReadNode::IOReadNode(std::string type)");
+	log_calls("IOReadNode::IOReadNode(IOReadNode::Type type)");
 
-	if (type == "*number")
-		this->children.push_back(new StringNode("number"));
+	this->nrOfCharacters = nullptr;
+	this->type = type;
 
-	this->variable = variable;
+	switch(type)
+	{
+		case IOReadNode::ALL:
+			this->children.push_back(new StringNode("*all"));
+			break;
+		case IOReadNode::LINE:
+			this->children.push_back(new StringNode("*line"));
+			break;
+		case IOReadNode::NUMBER:
+			this->children.push_back(new StringNode("*number"));
+			break;
+		case IOReadNode::VARIABLE:
+			break;
+	}
 }
 
 IOReadNode::~IOReadNode() {}
@@ -1441,6 +1455,28 @@ IOReadNode::~IOReadNode() {}
 Expression* IOReadNode::execute()
 {
 	log_calls("NOT IMPLEMENTED: Expression* IOReadNode::execute()");
+
+	switch(this->type)
+	{
+		case IOReadNode::Type::ALL:
+			log_calls("NOT IMPLEMENTED: case IOReadNode::ALL:");
+			break;
+		case IOReadNode::Type::LINE:
+			log_calls("NOT IMPLEMENTED: case IOReadNode::LINE:");
+			break;
+		case IOReadNode::Type::NUMBER:
+		{
+			std::cout << "wat\n";
+			std::string input = "";
+			std::getline(std::cin, input);
+			int number = std::stoi(input);
+			std::cout << "NUMBER: " << number << '\n';
+			break;
+		}
+		case IOReadNode::Type::VARIABLE:
+			log_calls("NOT IMPLEMENTED: case IOReadNode::VARIABLE:");
+			break;
+	}
 
 	return nullptr;
 }

@@ -122,8 +122,6 @@
 %type <Expression*> ioread
 %type <std::vector<Expression*>> explist
 %type <std::vector<Expression*>> arglist
-//%type <std::vector<Expression*>> varlist
-%type <Expression*> arg
 %type <Expression*> exp
 %type <Expression*> op
 %type <Expression*> op_1
@@ -175,9 +173,9 @@ arglist : LROUND exp RROUND							{ log_grammar("arglist:(exp)"); 				$$.push_ba
 repeatuntil : REPEAT block UNTIL exp				{ log_grammar("repeat:REPEAT block UNTIL exp"); $$ = new RepeatStatementNode($2, $4); }
 
 ioread : IO_READ LROUND exp RROUND					{ log_grammar("ioread:IO_READ (exp)");			$$ = new IOReadNode($3); }
- 	   | IO_READ LROUND IO_READ_NUMBER RROUND		{ log_grammar("ioread:IO_READ (*number)");		$$ = new IOReadNode($3); }
- 	   | IO_READ LROUND IO_READ_LINE RROUND			{ log_grammar("ioread:IO_READ (*line)");		$$ = new IOReadNode($3); }
-	   | IO_READ LROUND IO_READ_ALL RROUND			{ log_grammar("ioread:IO_READ (*all)");			$$ = new IOReadNode($3); }
+ 	   | IO_READ LROUND IO_READ_NUMBER RROUND		{ log_grammar("ioread:IO_READ (*number)");		$$ = new IOReadNode(IOReadNode::Type::NUMBER); }
+ 	   | IO_READ LROUND IO_READ_LINE RROUND			{ log_grammar("ioread:IO_READ (*line)");		$$ = new IOReadNode(IOReadNode::Type::LINE); }
+	   | IO_READ LROUND IO_READ_ALL RROUND			{ log_grammar("ioread:IO_READ (*all)");			$$ = new IOReadNode(IOReadNode::Type::ALL); }
 
 assignment : VAR ASSIGNMENT exp						{ log_grammar("assignment:VAR = exp");			$$ = new AssignmentNode(environment, new VariableNode(environment, $1), $3); }
  		   | VAR ASSIGNMENT ioread					{ log_grammar("assignment:VAR = ioread");		$$ = new AssignmentNode(environment, new VariableNode(environment, $1), $3); }

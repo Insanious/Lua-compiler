@@ -263,13 +263,16 @@ public:
 
 class IOReadNode : public Expression
 {
+public:
+	enum Type { ALL, LINE, NUMBER, VARIABLE } type;
 private:
-	Expression* variable;
+	Expression* nrOfCharacters;
+
 
 public:
 	IOReadNode();
-	IOReadNode(Expression* variable);
-	IOReadNode(std::string type);
+	IOReadNode(Expression* nrOfCharacters);
+	IOReadNode(IOReadNode::Type type);
 	~IOReadNode();
 
 	Expression* execute();
